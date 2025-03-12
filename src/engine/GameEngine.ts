@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { EntityManager } from './EntityManager';
 import { Level } from '../level/Level';
-import { InputManager } from '../InputManager';
+import { InputState } from './InputState';
 import { LevelData } from '../level/LevelTypes';
 import { GameCamera } from './GameCamera';
 import { Config } from '../Config';
+import { GameControls } from './GameControls';
 
 export class GameEngine {
   private scene: THREE.Scene;
@@ -12,7 +13,8 @@ export class GameEngine {
   private renderer: THREE.WebGLRenderer;
   private entityManager: EntityManager;
   private currentLevel: Level | null = null;
-  private inputManager: InputManager;
+  private inputState: InputState;
+  private gameControls: GameControls;
 
   constructor(canvas: HTMLCanvasElement) {
     // Initialize scene
@@ -27,13 +29,17 @@ export class GameEngine {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
-    // Initialize managers
-    this.entityManager = new EntityManager(this.scene);
-    this.inputManager = InputManager.getInstance();
-
     // Initialize camera
     this.camera = new GameCamera(window.innerWidth / window.innerHeight);
     this.camera.initialize(this.renderer, new THREE.Vector3(0, 5, 5), new THREE.Vector3(0, 0, 0));
+
+    // Initialize managers
+    this.entityManager = new EntityManager(this.scene);
+    this.inputState = new InputState(this.camera);
+    this.gameControls = new GameControls(this.inputState);
+
+    // Add camera as a controllable
+    this.gameControls.addControllable(this.camera);
 
     // Handle window resize
     window.addEventListener('resize', this.handleResize.bind(this));
@@ -64,17 +70,26 @@ export class GameEngine {
   }
 
   update(deltaTime: number): void {
+    // Update camera first to ensure correct state for input processing
+    this.camera.update();
+
+    // Update input state with current camera state
+    this.inputState.update();
+
+    // Update game controls (handles input for all controllables)
+    this.gameControls.update(deltaTime);
+
     // Update all systems
     this.entityManager.update(deltaTime);
     if (this.currentLevel) {
       this.currentLevel.update(deltaTime);
     }
 
-    // Update camera
-    this.camera.update();
-
     // Render
     this.renderer.render(this.scene, this.camera.getCamera());
+
+    // End input state frame
+    this.inputState.endFrame();
   }
 
   private handleResize(): void {
@@ -98,7 +113,7 @@ export class GameEngine {
     return this.entityManager;
   }
 
-  getInputManager(): InputManager {
-    return this.inputManager;
+  getGameControls(): GameControls {
+    return this.gameControls;
   }
 }

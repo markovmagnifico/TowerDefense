@@ -1,8 +1,10 @@
 import * as THREE from 'three';
-import { Config } from './Config';
+import { Config } from '../Config';
+import { Entity } from './Entity';
+import { InputState } from '../engine/InputState';
+import { Controllable } from '../engine/Controllable';
 
-export class Player {
-  private mesh: THREE.Group;
+export class Player extends Entity implements Controllable {
   private bodyGroup: THREE.Group;
   private body!: THREE.Mesh;
   private rotors: THREE.Mesh[];
@@ -12,27 +14,46 @@ export class Player {
   private currentPath: THREE.CubicBezierCurve3 | null = null;
   private pathProgress: number = 0;
   private isMoving: boolean = false;
-  private movementSpeed: number = Config.DRONE.MOVEMENT.HOVER_SPEED;
-  private rotorSpeed: number = 7.0;
+  public movementSpeed: number = Config.DRONE.MOVEMENT.HOVER_SPEED;
+  public rotorSpeed: number = 7.0;
   private currentRotorTilt: number = 0;
   private currentBodyTilt: THREE.Vector3 = new THREE.Vector3();
   private targetBodyTilt: THREE.Vector3 = new THREE.Vector3();
 
-  private debugTargetMarker: THREE.Mesh | null = null;
-  private debugPathLine: THREE.Line | null = null;
+  private debugTargetMarker!: THREE.Mesh;
+  private debugPathLine!: THREE.Line;
   private debugEnabled: boolean = false;
 
+  private scene: THREE.Scene;
+
   constructor(scene: THREE.Scene) {
-    this.mesh = new THREE.Group();
+    super();
+    this.scene = scene;
+
     this.bodyGroup = new THREE.Group();
     this.rotors = [];
     this.rotorGroups = [];
 
-    this.mesh.add(this.bodyGroup);
+    this.object3D.add(this.bodyGroup);
     this.createBody();
     this.createRotors();
-    this.initializeDebugVisuals(scene);
-    this.mesh.position.y = Config.DRONE.MOVEMENT.HOVER_HEIGHT;
+    this.initializeDebugVisuals();
+    this.object3D.position.y = Config.DRONE.MOVEMENT.HOVER_HEIGHT;
+  }
+
+  public handleInput(input: InputState, deltaTime: number): void {
+    // Handle click-to-move - only on fresh click, not hold
+    if (input.isMouseButtonPressed(0)) {
+      console.log('Mouse button pressed');
+      const worldPos = input.getWorldPosition();
+      console.log('World position:', worldPos);
+      if (worldPos && Player.isValidPosition(worldPos)) {
+        console.log('Moving to:', worldPos);
+        this.moveTo(worldPos);
+      } else {
+        console.log('Invalid position:', worldPos ? 'Out of bounds' : 'No world position');
+      }
+    }
   }
 
   private createBody(): void {
@@ -106,8 +127,10 @@ export class Player {
   }
 
   private createCurvedPath(targetPoint: THREE.Vector3): THREE.CubicBezierCurve3 {
-    const startPoint = this.mesh.position.clone();
-    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.mesh.quaternion);
+    const startPoint = this.object3D.position.clone();
+    console.log('Creating path from', startPoint, 'to', targetPoint);
+
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.object3D.quaternion);
     const toTarget = new THREE.Vector3().subVectors(targetPoint, startPoint).normalize();
     const distance = startPoint.distanceTo(targetPoint);
     const controlDist = distance * 0.5;
@@ -115,6 +138,7 @@ export class Player {
     const control1 = startPoint.clone().add(forward.multiplyScalar(controlDist));
     const control2 = targetPoint.clone().sub(toTarget.multiplyScalar(controlDist));
 
+    console.log('Path control points:', control1.clone(), control2.clone());
     return new THREE.CubicBezierCurve3(startPoint, control1, control2, targetPoint);
   }
 
@@ -182,11 +206,11 @@ export class Player {
       this.pathProgress = Math.min(this.pathProgress + movement, 1);
 
       const newPos = this.currentPath.getPointAt(this.pathProgress);
-      this.mesh.position.copy(newPos);
+      this.object3D.position.copy(newPos);
 
       if (this.pathProgress < 1) {
         const tangent = this.currentPath.getTangentAt(this.pathProgress);
-        this.mesh.rotation.y = Math.atan2(tangent.x, tangent.z);
+        this.object3D.rotation.y = Math.atan2(tangent.x, tangent.z);
       }
 
       if (this.pathProgress >= 1) {
@@ -198,21 +222,20 @@ export class Player {
     }
 
     const hoverDelta = Math.sin(performance.now() * Config.DRONE.MOVEMENT.HOVER_ANIM_SPEED);
-    this.mesh.position.y =
+    this.object3D.position.y =
       Config.DRONE.MOVEMENT.HOVER_HEIGHT + hoverDelta * Config.DRONE.MOVEMENT.HOVER_AMPLITUDE;
   }
 
-  public getMesh(): THREE.Group {
-    return this.mesh;
-  }
-
-  public setPosition(x: number, z: number): void {
-    this.mesh.position.x = x;
-    this.mesh.position.z = z;
+  public setPosition(x: number, y: number, z: number): void {
+    super.setPosition(x, y, z);
   }
 
   public moveTo(point: THREE.Vector3): void {
-    point.y = this.mesh.position.y;
+    // Always allow new movement commands
+    const oldY = this.object3D.position.y;
+    point.y = oldY;
+    console.log('MoveTo: from', this.object3D.position.clone(), 'to', point.clone());
+
     this.targetPoint = point;
     this.currentPath = this.createCurvedPath(point);
     this.pathProgress = 0;
@@ -231,7 +254,7 @@ export class Player {
     );
   }
 
-  private initializeDebugVisuals(scene: THREE.Scene): void {
+  private initializeDebugVisuals(): void {
     const markerGeometry = new THREE.RingGeometry(
       Config.DEBUG.TARGET_MARKER.INNER_RADIUS,
       Config.DEBUG.TARGET_MARKER.OUTER_RADIUS,
@@ -246,7 +269,7 @@ export class Player {
     this.debugTargetMarker = new THREE.Mesh(markerGeometry, markerMaterial);
     this.debugTargetMarker.rotation.x = -Math.PI / 2;
     this.debugTargetMarker.visible = false;
-    scene.add(this.debugTargetMarker);
+    this.scene.add(this.debugTargetMarker);
 
     const lineGeometry = new THREE.BufferGeometry();
     const lineMaterial = new THREE.LineBasicMaterial({
@@ -256,25 +279,26 @@ export class Player {
     });
     this.debugPathLine = new THREE.Line(lineGeometry, lineMaterial);
     this.debugPathLine.visible = false;
-    scene.add(this.debugPathLine);
+    this.scene.add(this.debugPathLine);
   }
 
   private updateDebugVisuals(): void {
     if (!this.debugEnabled || !this.isMoving || !this.currentPath) {
-      if (this.debugTargetMarker) this.debugTargetMarker.visible = false;
-      if (this.debugPathLine) this.debugPathLine.visible = false;
+      this.debugTargetMarker.visible = false;
+      this.debugPathLine.visible = false;
       return;
     }
 
-    if (this.debugTargetMarker && this.targetPoint) {
+    if (this.targetPoint) {
       this.debugTargetMarker.position.copy(this.targetPoint);
+      this.debugTargetMarker.position.y = 0.1; // Slightly above ground
       this.debugTargetMarker.visible = true;
+    } else {
+      this.debugTargetMarker.visible = false;
     }
 
-    if (this.debugPathLine) {
-      const points = this.currentPath.getPoints(50);
-      this.debugPathLine.geometry.setFromPoints(points);
-      this.debugPathLine.visible = true;
-    }
+    const points = this.currentPath.getPoints(50);
+    this.debugPathLine.geometry.setFromPoints(points);
+    this.debugPathLine.visible = true;
   }
 }

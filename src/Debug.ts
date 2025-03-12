@@ -6,7 +6,7 @@ import { Config } from './Config';
 import { GameCamera } from './engine/GameCamera';
 
 export class Debug {
-  private static instance: Debug;
+  private static instance: Debug | null = null;
   private scene: THREE.Scene;
   private camera: GameCamera;
   private stats!: Stats;
@@ -31,13 +31,9 @@ export class Debug {
     this.gui = new GUI({ width: Config.DEBUG.CONTROLS_WIDTH });
     this.gui.hide();
 
-    // Add debug controls
+    // Camera controls folder
     const cameraFolder = this.gui.addFolder('Camera');
-    const cameraPos = this.camera.getCamera().position;
-    cameraFolder.add(cameraPos, 'x').listen();
-    cameraFolder.add(cameraPos, 'y').listen();
-    cameraFolder.add(cameraPos, 'z').listen();
-    cameraFolder.add(this.camera, 'MOVEMENT_SPEED', 0.1, 2.0).name('Move Speed');
+    cameraFolder.add(this.camera, 'movementSpeed', 0.1, 2.0).name('Movement Speed');
 
     // Initialize CSS2D renderer for labels
     this.labelRenderer = new CSS2DRenderer();
@@ -144,16 +140,22 @@ export class Debug {
     }
   }
 
-  // Method to add custom debug values/controls
-  public addControl(folder: string, object: any, property: string, min?: number, max?: number) {
-    let guiFolder = this.gui.folders.find((f: GUI) => f._title === folder);
-    if (!guiFolder) {
-      guiFolder = this.gui.addFolder(folder);
+  public addControl<T extends object>(
+    folderName: string,
+    object: T,
+    property: keyof T & string,
+    min?: number,
+    max?: number
+  ): void {
+    let folder = this.gui.folders.find((f) => f._title === folderName);
+    if (!folder) {
+      folder = this.gui.addFolder(folderName);
     }
-    if (typeof object[property] === 'number' && min !== undefined && max !== undefined) {
-      guiFolder.add(object, property, min, max).name(property);
+
+    if (typeof min === 'number' && typeof max === 'number') {
+      folder.add(object, property, min, max).name(property);
     } else {
-      guiFolder.add(object, property).name(property);
+      folder.add(object, property).name(property);
     }
   }
 }

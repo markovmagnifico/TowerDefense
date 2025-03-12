@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { InputManager } from '../InputManager';
 import { Config } from '../Config';
+import { Controllable } from './Controllable';
+import { InputState } from './InputState';
 
-export class GameCamera {
+export class GameCamera implements Controllable {
   private camera: THREE.PerspectiveCamera;
   private controls!: OrbitControls;
-  private inputManager: InputManager;
-  public MOVEMENT_SPEED: number;
+  public movementSpeed: number;
 
   constructor(aspect: number) {
     this.camera = new THREE.PerspectiveCamera(
@@ -16,8 +16,7 @@ export class GameCamera {
       Config.CAMERA.NEAR,
       Config.CAMERA.FAR
     );
-    this.inputManager = InputManager.getInstance();
-    this.MOVEMENT_SPEED = Config.CAMERA.MOVEMENT_SPEED;
+    this.movementSpeed = Config.CAMERA.MOVEMENT_SPEED;
   }
 
   public initialize(
@@ -28,7 +27,7 @@ export class GameCamera {
     // Set up orbit controls
     this.controls = new OrbitControls(this.camera, renderer.domElement);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.05;
+    this.controls.dampingFactor = Config.CAMERA.DAMPING;
     this.controls.screenSpacePanning = false;
 
     // Set initial position and look target
@@ -36,8 +35,27 @@ export class GameCamera {
     this.controls.target.copy(lookAtPoint);
   }
 
+  public handleInput(input: InputState, deltaTime: number): void {
+    const moveDirection = new THREE.Vector3();
+
+    // Get camera's movement directions
+    const forward = this.getForwardDirection();
+    const right = this.getRightDirection();
+
+    // Add movement based on WASD keys
+    if (input.isKeyPressed('w')) moveDirection.add(forward);
+    if (input.isKeyPressed('s')) moveDirection.sub(forward);
+    if (input.isKeyPressed('d')) moveDirection.add(right);
+    if (input.isKeyPressed('a')) moveDirection.sub(right);
+
+    // Apply movement if any keys were pressed
+    if (moveDirection.length() > 0) {
+      moveDirection.normalize();
+      this.moveInDirection(moveDirection);
+    }
+  }
+
   public update() {
-    this.handleKeyboardMovement();
     this.controls.update();
   }
 
@@ -50,42 +68,28 @@ export class GameCamera {
     return this.camera;
   }
 
-  private handleKeyboardMovement() {
-    // Create a direction vector pointing in the camera's view direction
-    const cameraDirection = new THREE.Vector3();
-    this.camera.getWorldDirection(cameraDirection);
+  private moveInDirection(direction: THREE.Vector3) {
+    const movement = direction.multiplyScalar(this.movementSpeed);
+    this.camera.position.add(movement);
+    this.controls.target.add(movement);
+  }
 
-    // Project the camera direction onto the XZ plane and normalize
-    const forward = new THREE.Vector3(cameraDirection.x, 0, cameraDirection.z).normalize();
+  public getMovementSpeed(): number {
+    return this.movementSpeed;
+  }
 
-    // Calculate right vector using cross product with world up
+  // Get camera's forward direction projected onto XZ plane
+  private getForwardDirection(): THREE.Vector3 {
+    const forward = new THREE.Vector3();
+    this.camera.getWorldDirection(forward);
+    forward.y = 0;
+    return forward.normalize();
+  }
+
+  // Get camera's right direction on XZ plane
+  private getRightDirection(): THREE.Vector3 {
+    const forward = this.getForwardDirection();
     const right = new THREE.Vector3();
-    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-
-    // Calculate movement based on keys pressed
-    const moveDirection = new THREE.Vector3(0, 0, 0);
-
-    if (this.inputManager.isKeyPressed('w') || this.inputManager.isKeyPressed('ArrowUp')) {
-      moveDirection.add(forward);
-    }
-    if (this.inputManager.isKeyPressed('s') || this.inputManager.isKeyPressed('ArrowDown')) {
-      moveDirection.sub(forward);
-    }
-    if (this.inputManager.isKeyPressed('a') || this.inputManager.isKeyPressed('ArrowLeft')) {
-      moveDirection.sub(right);
-    }
-    if (this.inputManager.isKeyPressed('d') || this.inputManager.isKeyPressed('ArrowRight')) {
-      moveDirection.add(right);
-    }
-
-    // Normalize and apply movement
-    if (moveDirection.length() > 0) {
-      moveDirection.normalize();
-      moveDirection.multiplyScalar(this.MOVEMENT_SPEED);
-
-      // Move both camera and target together to maintain relative position
-      this.camera.position.add(moveDirection);
-      this.controls.target.add(moveDirection);
-    }
+    return right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
   }
 }
