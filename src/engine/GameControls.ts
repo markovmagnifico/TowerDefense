@@ -18,10 +18,6 @@ export class GameControls {
   }
 
   update(deltaTime: number): void {
-    if (this.controllables.length === 0) {
-      console.warn('No controllables registered');
-      return;
-    }
     this.controllables.forEach((controllable) => {
       controllable.handleInput(this.input, deltaTime);
     });

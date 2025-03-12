@@ -42,7 +42,7 @@ function animate() {
 
 // Connect player debug to main debug toggle
 debug.addControl('Player', player, 'movementSpeed', 1, 10);
-debug.addControl('Player', player, 'rotorSpeed', 0.1, 5);
+debug.addControl('Player', player, 'rotorSpeed', 0.1, 15);
 player.setDebugEnabled(true);
 
 animate();

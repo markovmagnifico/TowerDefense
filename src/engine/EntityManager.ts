@@ -2,29 +2,19 @@ import { Entity } from '../entities/Entity';
 import * as THREE from 'three';
 
 export class EntityManager {
-  private entities: Map<string, Entity>;
-  private scene: THREE.Scene;
+  private entities = new Map<string, Entity>();
 
-  constructor(scene: THREE.Scene) {
-    this.entities = new Map();
-    this.scene = scene;
-  }
+  constructor(private scene: THREE.Scene) {}
 
   addEntity(id: string, entity: Entity): void {
     this.entities.set(id, entity);
-    const object3D = entity.getObject3D();
-    if (object3D) {
-      this.scene.add(object3D);
-    }
+    this.scene.add(entity.getObject3D());
   }
 
   removeEntity(id: string): void {
     const entity = this.entities.get(id);
     if (entity) {
-      const object3D = entity.getObject3D();
-      if (object3D) {
-        this.scene.remove(object3D);
-      }
+      this.scene.remove(entity.getObject3D());
       this.entities.delete(id);
     }
   }

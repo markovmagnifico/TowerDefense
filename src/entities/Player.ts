@@ -7,33 +7,26 @@ import { Controllable } from '../engine/Controllable';
 export class Player extends Entity implements Controllable {
   private bodyGroup: THREE.Group;
   private body!: THREE.Mesh;
-  private rotors: THREE.Mesh[];
-  private rotorGroups: THREE.Group[];
+  private rotors: THREE.Mesh[] = [];
+  private rotorGroups: THREE.Group[] = [];
 
   private targetPoint: THREE.Vector3 | null = null;
   private currentPath: THREE.CubicBezierCurve3 | null = null;
-  private pathProgress: number = 0;
-  private isMoving: boolean = false;
-  public movementSpeed: number = Config.DRONE.MOVEMENT.HOVER_SPEED;
-  public rotorSpeed: number = 7.0;
-  private currentRotorTilt: number = 0;
-  private currentBodyTilt: THREE.Vector3 = new THREE.Vector3();
-  private targetBodyTilt: THREE.Vector3 = new THREE.Vector3();
+  private pathProgress = 0;
+  private isMoving = false;
+  public movementSpeed = Config.DRONE.MOVEMENT.HOVER_SPEED;
+  public rotorSpeed = 7.0;
+  private currentRotorTilt = 0;
+  private currentBodyTilt = new THREE.Vector3();
+  private targetBodyTilt = new THREE.Vector3();
 
   private debugTargetMarker!: THREE.Mesh;
   private debugPathLine!: THREE.Line;
-  private debugEnabled: boolean = false;
+  private debugEnabled = false;
 
-  private scene: THREE.Scene;
-
-  constructor(scene: THREE.Scene) {
+  constructor(private scene: THREE.Scene) {
     super();
-    this.scene = scene;
-
     this.bodyGroup = new THREE.Group();
-    this.rotors = [];
-    this.rotorGroups = [];
-
     this.object3D.add(this.bodyGroup);
     this.createBody();
     this.createRotors();
@@ -41,17 +34,11 @@ export class Player extends Entity implements Controllable {
     this.object3D.position.y = Config.DRONE.MOVEMENT.HOVER_HEIGHT;
   }
 
-  public handleInput(input: InputState, deltaTime: number): void {
-    // Handle click-to-move - only on fresh click, not hold
+  handleInput(input: InputState): void {
     if (input.isMouseButtonPressed(0)) {
-      console.log('Mouse button pressed');
       const worldPos = input.getWorldPosition();
-      console.log('World position:', worldPos);
       if (worldPos && Player.isValidPosition(worldPos)) {
-        console.log('Moving to:', worldPos);
         this.moveTo(worldPos);
-      } else {
-        console.log('Invalid position:', worldPos ? 'Out of bounds' : 'No world position');
       }
     }
   }
@@ -128,8 +115,6 @@ export class Player extends Entity implements Controllable {
 
   private createCurvedPath(targetPoint: THREE.Vector3): THREE.CubicBezierCurve3 {
     const startPoint = this.object3D.position.clone();
-    console.log('Creating path from', startPoint, 'to', targetPoint);
-
     const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.object3D.quaternion);
     const toTarget = new THREE.Vector3().subVectors(targetPoint, startPoint).normalize();
     const distance = startPoint.distanceTo(targetPoint);
@@ -138,7 +123,6 @@ export class Player extends Entity implements Controllable {
     const control1 = startPoint.clone().add(forward.multiplyScalar(controlDist));
     const control2 = targetPoint.clone().sub(toTarget.multiplyScalar(controlDist));
 
-    console.log('Path control points:', control1.clone(), control2.clone());
     return new THREE.CubicBezierCurve3(startPoint, control1, control2, targetPoint);
   }
 
@@ -192,7 +176,7 @@ export class Player extends Entity implements Controllable {
     this.bodyGroup.rotation.z = this.currentBodyTilt.z;
   }
 
-  public update(deltaTime: number): void {
+  update(deltaTime: number): void {
     this.rotors.forEach((rotor, index) => {
       rotor.rotation.z += this.rotorSpeed * deltaTime * (index % 2 ? 1 : -1);
     });
@@ -226,16 +210,9 @@ export class Player extends Entity implements Controllable {
       Config.DRONE.MOVEMENT.HOVER_HEIGHT + hoverDelta * Config.DRONE.MOVEMENT.HOVER_AMPLITUDE;
   }
 
-  public setPosition(x: number, y: number, z: number): void {
-    super.setPosition(x, y, z);
-  }
-
-  public moveTo(point: THREE.Vector3): void {
-    // Always allow new movement commands
+  moveTo(point: THREE.Vector3): void {
     const oldY = this.object3D.position.y;
     point.y = oldY;
-    console.log('MoveTo: from', this.object3D.position.clone(), 'to', point.clone());
-
     this.targetPoint = point;
     this.currentPath = this.createCurvedPath(point);
     this.pathProgress = 0;
@@ -243,15 +220,9 @@ export class Player extends Entity implements Controllable {
     this.updateDebugVisuals();
   }
 
-  public setDebugEnabled(enabled: boolean): void {
+  setDebugEnabled(enabled: boolean): void {
     this.debugEnabled = enabled;
     this.updateDebugVisuals();
-  }
-
-  public static isValidPosition(point: THREE.Vector3): boolean {
-    return (
-      point.x >= 0 && point.x <= Config.BOARD_SIZE && point.z >= 0 && point.z <= Config.BOARD_SIZE
-    );
   }
 
   private initializeDebugVisuals(): void {
@@ -291,7 +262,7 @@ export class Player extends Entity implements Controllable {
 
     if (this.targetPoint) {
       this.debugTargetMarker.position.copy(this.targetPoint);
-      this.debugTargetMarker.position.y = 0.1; // Slightly above ground
+      this.debugTargetMarker.position.y = 0.1;
       this.debugTargetMarker.visible = true;
     } else {
       this.debugTargetMarker.visible = false;
@@ -300,5 +271,11 @@ export class Player extends Entity implements Controllable {
     const points = this.currentPath.getPoints(50);
     this.debugPathLine.geometry.setFromPoints(points);
     this.debugPathLine.visible = true;
+  }
+
+  static isValidPosition(point: THREE.Vector3): boolean {
+    return (
+      point.x >= 0 && point.x <= Config.BOARD_SIZE && point.z >= 0 && point.z <= Config.BOARD_SIZE
+    );
   }
 }

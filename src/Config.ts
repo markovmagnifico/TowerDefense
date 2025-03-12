@@ -81,4 +81,4 @@ export const Config = {
       OPACITY: 0.5,
     },
   },
-} as const;
+};
