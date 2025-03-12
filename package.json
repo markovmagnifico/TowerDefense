@@ -14,15 +14,19 @@
     "show-error": "./scripts/read-npm-error.sh"
   },
   "devDependencies": {
+    "@types/stats.js": "^0.17.3",
+    "@types/three": "^0.174.0",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
     "eslint": "^9.22.0",
+    "lil-gui": "^0.20.0",
     "prettier": "^3.5.3",
+    "stats.js": "^0.17.0",
+    "three-css2drenderer": "^1.0.0",
     "typescript": "~5.7.2",
     "vite": "^6.2.0"
   },
   "dependencies": {
-    "@types/three": "^0.174.0",
     "three": "^0.174.0"
   }
 }
