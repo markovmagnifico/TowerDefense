@@ -23,6 +23,7 @@ export interface LevelData {
       colors: {
         primary: string;
         secondary: string;
+        tertiary: string;
       };
     };
   };

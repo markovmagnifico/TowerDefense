@@ -2,6 +2,7 @@
   "colors": {
     "sand_light": "#f4d03f",
     "sand_dark": "#d4ac0d",
+    "sand_medium": "#f4d03f",
     "grass_light": "#2ecc71",
     "grass_dark": "#27ae60",
     "stone_light": "#95a5a6",

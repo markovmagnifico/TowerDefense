@@ -64,6 +64,11 @@ export const Config = {
     },
   },
 
+  // Terrain configuration
+  TERRAIN: {
+    HEIGHT_SCALE: 2.0, // How exaggerated the heights should be
+  },
+
   // Debug configuration
   DEBUG: {
     TOGGLE_KEY: '`',

@@ -3,6 +3,13 @@ import { LevelData } from './LevelTypes';
 import { Config } from '../Config';
 import { EntityManager } from '../engine/EntityManager';
 import { AmbientLight, DirectionalLight } from '../entities/Light';
+import colors from '../../assets/colors.json';
+import { GridShader } from './shaders/GridShader';
+import { NoiseShader } from './shaders/NoiseShader';
+import { SteepnessShader } from './shaders/SteepnessShader';
+import { RetroTerrainShader } from './shaders/RetroTerrainShader';
+type ColorMap = typeof colors.colors;
+type ColorName = keyof ColorMap;
 
 export class Level {
   private scene: THREE.Scene;
@@ -10,10 +17,24 @@ export class Level {
   private levelData: LevelData;
   private entityManager: EntityManager;
 
+  // Choose which shader to use by uncommenting one of these:
+  //   private terrainShader = new GridShader();
+  //   private terrainShader = new NoiseShader();
+  //   private terrainShader = new SteepnessShader();
+  private terrainShader = new RetroTerrainShader();
+
   constructor(scene: THREE.Scene, levelData: LevelData, entityManager: EntityManager) {
     this.scene = scene;
     this.levelData = levelData;
     this.entityManager = entityManager;
+  }
+
+  private resolveColor(colorRef: string): string {
+    if (colorRef.startsWith('@')) {
+      const colorName = colorRef.slice(1) as ColorName;
+      return colors.colors[colorName] || colorRef;
+    }
+    return colorRef;
   }
 
   initialize(): void {
@@ -50,48 +71,41 @@ export class Level {
   }
 
   private createGround(): THREE.Mesh {
+    const { width, height } = this.levelData.dimensions;
+
     const groundGeometry = new THREE.PlaneGeometry(
-      this.levelData.dimensions.width * Config.TILE_SIZE,
-      this.levelData.dimensions.height * Config.TILE_SIZE,
-      this.levelData.dimensions.width,
-      this.levelData.dimensions.height
+      width * Config.TILE_SIZE,
+      height * Config.TILE_SIZE,
+      width,
+      height
     );
 
-    // TODO: Use colors from level file
-    const groundMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        tileSize: { value: Config.TILE_SIZE },
-        lightColor: { value: new THREE.Color(Config.COLORS.LIGHT_GREEN) },
-        darkColor: { value: new THREE.Color(Config.COLORS.DARK_GREEN) },
+    // Apply heightmap to vertices
+    const vertices = groundGeometry.attributes.position.array;
+    const heightmap = this.levelData.terrain.heightmap;
+
+    for (let i = 0; i <= height; i++) {
+      for (let j = 0; j <= width; j++) {
+        const vertexIndex = (i * (width + 1) + j) * 3;
+        vertices[vertexIndex + 2] = heightmap[i][j] * Config.TERRAIN.HEIGHT_SCALE;
+      }
+    }
+
+    groundGeometry.attributes.position.needsUpdate = true;
+    groundGeometry.computeVertexNormals();
+
+    const groundMaterial = this.terrainShader.createMaterial(
+      {
+        primaryColor: this.resolveColor(this.levelData.terrain.ground.colors.primary),
+        secondaryColor: this.resolveColor(this.levelData.terrain.ground.colors.secondary),
+        tertiaryColor: this.resolveColor(this.levelData.terrain.ground.colors.tertiary),
       },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform float tileSize;
-        uniform vec3 lightColor;
-        uniform vec3 darkColor;
-        varying vec2 vUv;
-        
-        void main() {
-          vec2 coord = floor(vUv * ${this.levelData.dimensions.width}.0);
-          bool isLight = mod(coord.x + coord.y, 2.0) == 0.0;
-          gl_FragColor = vec4(isLight ? lightColor : darkColor, 1.0);
-        }
-      `,
-    });
+      width
+    );
 
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
-    ground.position.set(
-      this.levelData.dimensions.width / 2,
-      0,
-      this.levelData.dimensions.height / 2
-    );
+    ground.position.set((width * Config.TILE_SIZE) / 2, 0, (height * Config.TILE_SIZE) / 2);
     return ground;
   }
 
@@ -104,6 +118,9 @@ export class Level {
   }
 
   update(deltaTime: number): void {
+    // Update shader (needed for NoiseShader animation)
+    this.terrainShader.update(deltaTime);
+
     // TODO: Update any level animations/effects
   }
 
