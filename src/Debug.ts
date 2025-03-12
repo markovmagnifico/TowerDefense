@@ -3,7 +3,7 @@ import Stats from 'stats.js';
 import GUI from 'lil-gui';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { Config } from './Config';
-import { GameCamera } from './GameCamera';
+import { GameCamera } from './engine/GameCamera';
 
 export class Debug {
   private static instance: Debug;

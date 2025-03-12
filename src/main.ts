@@ -1,38 +1,25 @@
 import * as THREE from 'three';
-import { GameCamera } from './GameCamera';
-import { GameScene } from './GameScene';
+import { GameEngine } from './engine/GameEngine';
 import { Debug } from './Debug';
 import { Config } from './Config';
 import { Player } from './Player';
+import level1 from '../assets/levels/level1.json';
 
-// Initialize renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(Config.COLORS.BACKGROUND);
-document.body.appendChild(renderer.domElement);
+// Initialize game engine
+const canvas = document.createElement('canvas');
+document.body.appendChild(canvas);
+const engine = new GameEngine(canvas);
 
-// Initialize scene
-const gameScene = new GameScene();
-
-// Initialize camera
-const gameCamera = new GameCamera(window.innerWidth / window.innerHeight);
-gameCamera.initialize(
-  renderer,
-  new THREE.Vector3(
-    gameScene.getBoardSize() / 2,
-    gameScene.getBoardSize() * Config.CAMERA.INITIAL_HEIGHT,
-    gameScene.getBoardSize() * Config.CAMERA.INITIAL_DISTANCE
-  ),
-  gameScene.getBoardCenter()
-);
+// Load initial level
+engine.loadLevel(level1);
 
 // Initialize player
-const player = new Player(gameScene.getScene());
+const player = new Player(engine.getScene());
 player.setPosition(Config.BOARD_SIZE / 2, Config.BOARD_SIZE / 2); // Start in center
-gameScene.getScene().add(player.getMesh());
+engine.getScene().add(player.getMesh());
 
 // Initialize debug tools
-const debug = Debug.initialize(gameScene.getScene(), gameCamera);
+const debug = Debug.initialize(engine.getScene(), engine.getCamera());
 
 // Set up click handling
 const raycaster = new THREE.Raycaster();
@@ -46,7 +33,7 @@ function handleClick(event: MouseEvent) {
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   // Update the picking ray with the camera and mouse position
-  raycaster.setFromCamera(mouse, gameCamera.getCamera());
+  raycaster.setFromCamera(mouse, engine.getCamera().getCamera());
 
   // Calculate the point of intersection with the ground plane
   if (raycaster.ray.intersectPlane(clickPlane, intersectPoint)) {
@@ -69,20 +56,10 @@ function animate() {
   lastTime = currentTime;
 
   requestAnimationFrame(animate);
-  gameCamera.update();
+  engine.update(deltaTime);
   player.update(deltaTime);
   debug.update();
-  renderer.render(gameScene.getScene(), gameCamera.getCamera());
 }
-
-// Handle window resizing
-window.addEventListener('resize', () => {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  renderer.setSize(width, height);
-  gameCamera.onResize(width / height);
-});
 
 // Connect player debug to main debug toggle
 debug.addControl('Player', player, 'movementSpeed', 1, 10);

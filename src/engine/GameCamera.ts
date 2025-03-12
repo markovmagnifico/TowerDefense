@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { InputManager } from './InputManager';
-import { Config } from './Config';
+import { InputManager } from '../InputManager';
+import { Config } from '../Config';
 
 export class GameCamera {
   private camera: THREE.PerspectiveCamera;
