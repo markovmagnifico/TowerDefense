@@ -46,6 +46,8 @@ export class GameEngine {
     this.currentLevel = new Level(this.scene, levelData, this.entityManager);
     this.currentLevel.initialize();
 
+    this.inputState.setGroundMesh(this.currentLevel.getGroundMesh());
+
     const center = this.currentLevel.getBoardCenter();
     const size = this.currentLevel.getBoardSize();
     this.camera.initialize(

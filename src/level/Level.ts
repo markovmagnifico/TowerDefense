@@ -145,6 +145,13 @@ export class Level {
     return Math.max(this.levelData.dimensions.width, this.levelData.dimensions.height);
   }
 
+  getGroundMesh(): THREE.Mesh {
+    if (!this.ground) {
+      throw new Error('Ground mesh not initialized');
+    }
+    return this.ground;
+  }
+
   dispose(): void {
     if (this.ground) {
       this.ground.geometry.dispose();

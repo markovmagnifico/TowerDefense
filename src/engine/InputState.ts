@@ -13,7 +13,7 @@ export class InputState {
   // Processed state - updated once per frame
   private worldPosition: THREE.Vector3 | null = null;
   private raycaster = new THREE.Raycaster();
-  private groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  private groundMesh: THREE.Mesh | null = null;
 
   constructor(private camera: GameCamera) {
     // Mouse move - just store raw position
@@ -49,6 +49,10 @@ export class InputState {
     });
   }
 
+  setGroundMesh(mesh: THREE.Mesh) {
+    this.groundMesh = mesh;
+  }
+
   update() {
     // Update world position with current camera state
     this.updateWorldPosition();
@@ -62,11 +66,13 @@ export class InputState {
   }
 
   private updateWorldPosition() {
-    this.raycaster.setFromCamera(this.currentMousePosition, this.camera.getCamera());
-    const target = new THREE.Vector3();
+    if (!this.groundMesh) return;
 
-    if (this.raycaster.ray.intersectPlane(this.groundPlane, target)) {
-      this.worldPosition = target;
+    this.raycaster.setFromCamera(this.currentMousePosition, this.camera.getCamera());
+    const intersects = this.raycaster.intersectObject(this.groundMesh);
+
+    if (intersects.length > 0) {
+      this.worldPosition = intersects[0].point;
     } else {
       this.worldPosition = null;
     }
