@@ -12,8 +12,9 @@ const engine = new GameEngine(canvas);
 // Load initial level
 engine.loadLevel(level1);
 
-// Initialize player
-const player = new Player(engine.getScene(), level1.dimensions);
+// Initialize player with height callback
+const terrainGrid = engine.getLevel().getTerrainGrid();
+const player = new Player(engine.getScene(), terrainGrid.createHeightCallback(), level1.dimensions);
 engine.getEntityManager().addEntity('player', player);
 engine.getGameControls().addControllable(player);
 player.setPosition(

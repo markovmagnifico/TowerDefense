@@ -16,6 +16,8 @@ interface GridCell {
   entity: Entity | null;
 }
 
+export type HeightCallback = (x: number, z: number) => number;
+
 export class TerrainGrid {
   private cells: GridCell[][];
   private heightmap: number[][];
@@ -141,5 +143,9 @@ export class TerrainGrid {
         callback(x, z, this.cells[z][x]);
       }
     }
+  }
+
+  createHeightCallback(): HeightCallback {
+    return (x: number, z: number) => this.getHeightAt(x, z);
   }
 }
