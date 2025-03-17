@@ -3,12 +3,14 @@ import { Config } from '../Config';
 import { Entity } from './Entity';
 import { InputState } from '../engine/InputState';
 import { Controllable } from '../engine/Controllable';
+import { GridDimensions } from '../level/LevelTypes';
 
 export class Player extends Entity implements Controllable {
   private bodyGroup: THREE.Group;
   private body!: THREE.Mesh;
   private rotors: THREE.Mesh[] = [];
   private rotorGroups: THREE.Group[] = [];
+  private dimensions: GridDimensions;
 
   private targetPoint: THREE.Vector3 | null = null;
   private currentPath: THREE.CubicBezierCurve3 | null = null;
@@ -24,8 +26,12 @@ export class Player extends Entity implements Controllable {
   private debugPathLine!: THREE.Line;
   private debugEnabled = false;
 
-  constructor(private scene: THREE.Scene) {
+  constructor(
+    private scene: THREE.Scene,
+    dimensions: GridDimensions
+  ) {
     super();
+    this.dimensions = dimensions;
     this.bodyGroup = new THREE.Group();
     this.object3D.add(this.bodyGroup);
     this.createBody();
@@ -37,7 +43,7 @@ export class Player extends Entity implements Controllable {
   handleInput(input: InputState): void {
     if (input.isMouseButtonPressed(0)) {
       const worldPos = input.getWorldPosition();
-      if (worldPos && Player.isValidPosition(worldPos)) {
+      if (worldPos && this.isValidPosition(worldPos)) {
         this.moveTo(worldPos);
       }
     }
@@ -273,9 +279,12 @@ export class Player extends Entity implements Controllable {
     this.debugPathLine.visible = true;
   }
 
-  static isValidPosition(point: THREE.Vector3): boolean {
+  private isValidPosition(point: THREE.Vector3): boolean {
     return (
-      point.x >= 0 && point.x <= Config.BOARD_SIZE && point.z >= 0 && point.z <= Config.BOARD_SIZE
+      point.x >= 0 &&
+      point.x <= this.dimensions.width &&
+      point.z >= 0 &&
+      point.z <= this.dimensions.height
     );
   }
 }

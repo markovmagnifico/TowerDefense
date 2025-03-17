@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TerrainShader, TerrainShaderConfig, TerrainShaderUniforms } from './TerrainShader';
+import { GridDimensions } from '../LevelTypes';
 
 export class RetroTerrainShader extends TerrainShader {
   protected material: THREE.ShaderMaterial | null = null;
@@ -25,7 +26,7 @@ export class RetroTerrainShader extends TerrainShader {
     `;
   }
 
-  getFragmentShader(gridSize: number): string {
+  getFragmentShader(dimensions: GridDimensions): string {
     return `
       uniform vec3 primaryColor;
       uniform vec3 secondaryColor;
@@ -34,7 +35,7 @@ export class RetroTerrainShader extends TerrainShader {
       varying vec3 vPosition;
       
       void main() {
-        vec2 coord = floor(vUv * ${gridSize}.0);
+        vec2 coord = floor(vec2(vUv.x * ${dimensions.width}.0, vUv.y * ${dimensions.height}.0));
         float pattern = mod(coord.x + coord.y, 3.0);
         
         // Calculate normal for this grid cell using surface derivatives
@@ -46,7 +47,8 @@ export class RetroTerrainShader extends TerrainShader {
         float slope = 1.0 - abs(normal.y);  // 0 = flat, 1 = vertical
         
         // Quantize slope to grid cells
-        slope = floor(slope * ${gridSize}.0) / ${gridSize}.0;
+        float gridSize = max(${dimensions.width}.0, ${dimensions.height}.0);
+        slope = floor(slope * gridSize) / gridSize;
         
         vec3 slopeColor = (slope < 0.2) ? primaryColor : 
                          (slope < 0.7) ? secondaryColor : 
@@ -66,11 +68,11 @@ export class RetroTerrainShader extends TerrainShader {
     `;
   }
 
-  createMaterial(config: TerrainShaderConfig, gridSize: number): THREE.ShaderMaterial {
+  createMaterial(config: TerrainShaderConfig, dimensions: GridDimensions): THREE.ShaderMaterial {
     this.material = new THREE.ShaderMaterial({
       uniforms: this.getUniforms(config),
       vertexShader: this.getVertexShader(),
-      fragmentShader: this.getFragmentShader(gridSize),
+      fragmentShader: this.getFragmentShader(dimensions),
       side: THREE.DoubleSide,
     });
 

@@ -95,4 +95,11 @@ export class GameEngine {
   getGameControls(): GameControls {
     return this.gameControls;
   }
+
+  getLevel(): Level {
+    if (!this.currentLevel) {
+      throw new Error('Level not loaded');
+    }
+    return this.currentLevel;
+  }
 }

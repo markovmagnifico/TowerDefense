@@ -14,13 +14,13 @@ const engine = new GameEngine(canvas);
 engine.loadLevel(level1);
 
 // Initialize player
-const player = new Player(engine.getScene());
+const player = new Player(engine.getScene(), level1.dimensions);
 engine.getEntityManager().addEntity('player', player);
 engine.getGameControls().addControllable(player);
 player.setPosition(
-  Config.BOARD_SIZE / 2,
+  engine.getLevel().getBoardCenter().x,
   Config.DRONE.MOVEMENT.HOVER_HEIGHT,
-  Config.BOARD_SIZE / 2
+  engine.getLevel().getBoardCenter().z
 );
 
 // Initialize debug tools

@@ -6,16 +6,18 @@ export interface PathNode {
   id?: string;
 }
 
+export interface GridDimensions {
+  width: number;
+  height: number;
+}
+
 export interface LevelData {
   metadata: {
     id: string;
     name: string;
     description: string;
   };
-  dimensions: {
-    width: number;
-    height: number;
-  };
+  dimensions: GridDimensions;
   terrain: {
     heightmap: number[][];
     ground: {

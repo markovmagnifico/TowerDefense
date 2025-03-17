@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TerrainShader, TerrainShaderConfig, TerrainShaderUniforms } from './TerrainShader';
+import { GridDimensions } from '../LevelTypes';
 
 export class NoiseShader extends TerrainShader {
   getUniforms(config: TerrainShaderConfig): TerrainShaderUniforms {
@@ -27,7 +28,7 @@ export class NoiseShader extends TerrainShader {
     `;
   }
 
-  getFragmentShader(gridSize: number): string {
+  getFragmentShader(dimensions: GridDimensions): string {
     return `
       uniform vec3 primaryColor;
       uniform vec3 secondaryColor;
@@ -70,8 +71,11 @@ export class NoiseShader extends TerrainShader {
       }
       
       void main() {
+        // Scale UV based on dimensions to maintain aspect ratio
+        vec2 scaledUV = vec2(vUv.x * float(${dimensions.width}) / float(${dimensions.height}), vUv.y);
+        
         // Generate noise based on position and time
-        float n = snoise(vUv * noiseScale + time * 0.1);
+        float n = snoise(scaledUV * noiseScale + time * 0.1);
         n = (n + 1.0) * 0.5; // normalize to 0-1
         
         // Mix colors based on noise and height

@@ -1,6 +1,5 @@
 export const Config = {
   // Board configuration
-  BOARD_SIZE: 20,
   TILE_SIZE: 1,
   COLORS: {
     LIGHT_GREEN: 0xf4d03f, // Warm sand

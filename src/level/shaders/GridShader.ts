@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TerrainShader, TerrainShaderConfig, TerrainShaderUniforms } from './TerrainShader';
+import { GridDimensions } from '../LevelTypes';
 
 export class GridShader extends TerrainShader {
   getUniforms(config: TerrainShaderConfig): TerrainShaderUniforms {
@@ -24,7 +25,7 @@ export class GridShader extends TerrainShader {
     `;
   }
 
-  getFragmentShader(gridSize: number): string {
+  getFragmentShader(dimensions: GridDimensions): string {
     return `
       uniform vec3 lightColor;
       uniform vec3 darkColor;
@@ -33,7 +34,7 @@ export class GridShader extends TerrainShader {
       varying vec3 vNormal;
       
       void main() {
-        vec2 coord = floor(vUv * ${gridSize}.0);
+        vec2 coord = floor(vec2(vUv.x * ${dimensions.width}.0, vUv.y * ${dimensions.height}.0));
         bool isLight = mod(coord.x + coord.y, 2.0) == 0.0;
         vec3 baseColor = isLight ? lightColor : darkColor;
         

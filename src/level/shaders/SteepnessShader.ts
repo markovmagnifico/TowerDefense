@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TerrainShader, TerrainShaderConfig, TerrainShaderUniforms } from './TerrainShader';
+import { GridDimensions } from '../LevelTypes';
 
 export class SteepnessShader extends TerrainShader {
   getUniforms(config: TerrainShaderConfig): TerrainShaderUniforms {
@@ -32,7 +33,7 @@ export class SteepnessShader extends TerrainShader {
     `;
   }
 
-  getFragmentShader(gridSize: number): string {
+  getFragmentShader(dimensions: GridDimensions): string {
     return `
       uniform vec3 primaryColor;
       uniform vec3 secondaryColor;
@@ -46,6 +47,9 @@ export class SteepnessShader extends TerrainShader {
       varying float vSteepness;
       
       void main() {
+        vec2 coord = floor(vec2(vUv.x * ${dimensions.width}.0, vUv.y * ${dimensions.height}.0));
+        float pattern = mod(coord.x + coord.y, 2.0);
+        
         vec3 baseColor;
         
         // Smooth transitions between colors based on steepness
@@ -63,7 +67,10 @@ export class SteepnessShader extends TerrainShader {
         float lightIntensity = max(dot(vNormal, normalize(vec3(1.0, 1.0, 1.0))), 0.0);
         float shadingFactor = 0.7 + 0.3 * lightIntensity;
         
-        gl_FragColor = vec4(baseColor * heightFactor * shadingFactor, 1.0);
+        // Apply subtle pattern variation
+        float patternFactor = pattern == 0.0 ? 1.0 : 0.95;
+        
+        gl_FragColor = vec4(baseColor * heightFactor * shadingFactor * patternFactor, 1.0);
       }
     `;
   }

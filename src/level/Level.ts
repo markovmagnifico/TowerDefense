@@ -84,10 +84,14 @@ export class Level {
     const vertices = groundGeometry.attributes.position.array;
     const heightmap = this.levelData.terrain.heightmap;
 
+    // PlaneGeometry creates width+1 x height+1 vertices
     for (let i = 0; i <= height; i++) {
       for (let j = 0; j <= width; j++) {
         const vertexIndex = (i * (width + 1) + j) * 3;
-        vertices[vertexIndex + 2] = heightmap[i][j] * Config.TERRAIN.HEIGHT_SCALE;
+        // For vertices at the edges, use the nearest heightmap value
+        const heightmapI = Math.min(i, heightmap.length - 1);
+        const heightmapJ = Math.min(j, heightmap[0].length - 1);
+        vertices[vertexIndex + 2] = heightmap[heightmapI][heightmapJ] * Config.TERRAIN.HEIGHT_SCALE;
       }
     }
 
@@ -100,7 +104,7 @@ export class Level {
         secondaryColor: this.resolveColor(this.levelData.terrain.ground.colors.secondary),
         tertiaryColor: this.resolveColor(this.levelData.terrain.ground.colors.tertiary),
       },
-      width
+      { width, height }
     );
 
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);

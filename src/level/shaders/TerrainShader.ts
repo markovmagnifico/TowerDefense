@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GridDimensions } from '../LevelTypes';
 
 export interface TerrainShaderConfig {
   primaryColor: string;
@@ -15,13 +16,13 @@ export abstract class TerrainShader {
 
   abstract getUniforms(config: TerrainShaderConfig): TerrainShaderUniforms;
   abstract getVertexShader(): string;
-  abstract getFragmentShader(gridSize: number): string;
+  abstract getFragmentShader(dimensions: GridDimensions): string;
 
-  createMaterial(config: TerrainShaderConfig, gridSize: number): THREE.ShaderMaterial {
+  createMaterial(config: TerrainShaderConfig, dimensions: GridDimensions): THREE.ShaderMaterial {
     this.material = new THREE.ShaderMaterial({
       uniforms: this.getUniforms(config),
       vertexShader: this.getVertexShader(),
-      fragmentShader: this.getFragmentShader(gridSize),
+      fragmentShader: this.getFragmentShader(dimensions),
     });
     return this.material;
   }
