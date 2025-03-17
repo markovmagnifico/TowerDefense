@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { GameEngine } from './engine/GameEngine';
-import { Debug } from './Debug';
 import { Config } from './Config';
 import { Player } from './entities/Player';
 import level1 from '../assets/levels/level1.json';
@@ -23,9 +22,6 @@ player.setPosition(
   engine.getLevel().getBoardCenter().z
 );
 
-// Initialize debug tools
-const debug = Debug.initialize(engine.getScene(), engine.getCamera());
-
 // Track last time for delta time calculation
 let lastTime = performance.now();
 
@@ -37,10 +33,10 @@ function animate() {
 
   requestAnimationFrame(animate);
   engine.update(deltaTime);
-  debug.update();
 }
 
 // Connect player debug to main debug toggle
+const debug = engine.getDebugSystem();
 debug.addControl('Player', player, 'movementSpeed', 1, 10);
 debug.addControl('Player', player, 'rotorSpeed', 0.1, 15);
 player.setDebugEnabled(true);

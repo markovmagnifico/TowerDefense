@@ -8,6 +8,8 @@ import { GridShader } from './shaders/GridShader';
 import { NoiseShader } from './shaders/NoiseShader';
 import { SteepnessShader } from './shaders/SteepnessShader';
 import { RetroTerrainShader } from './shaders/RetroTerrainShader';
+import { TerrainGrid, CellType } from './TerrainGrid';
+
 type ColorMap = typeof colors.colors;
 type ColorName = keyof ColorMap;
 
@@ -16,6 +18,7 @@ export class Level {
   private ground: THREE.Mesh | null = null;
   private levelData: LevelData;
   private entityManager: EntityManager;
+  private terrainGrid: TerrainGrid;
 
   // Choose which shader to use by uncommenting one of these:
   //   private terrainShader = new GridShader();
@@ -27,6 +30,7 @@ export class Level {
     this.scene = scene;
     this.levelData = levelData;
     this.entityManager = entityManager;
+    this.terrainGrid = new TerrainGrid(levelData.dimensions, levelData.terrain.heightmap);
   }
 
   private resolveColor(colorRef: string): string {
@@ -45,8 +49,17 @@ export class Level {
     // Create lights as entities
     this.createLights();
 
-    // TODO: Draw paths
-    this.drawPaths();
+    // Initialize paths in terrain grid
+    this.initializePaths();
+  }
+
+  private initializePaths(): void {
+    // Mark path cells in the terrain grid
+    this.levelData.paths.nodes.forEach((node) => {
+      const type =
+        node.type === 'spawn' ? CellType.SPAWN : node.type === 'end' ? CellType.END : CellType.PATH;
+      this.terrainGrid.setCellType(node.x, node.y, type);
+    });
   }
 
   private createLights(): void {
@@ -113,24 +126,29 @@ export class Level {
     return ground;
   }
 
-  private drawPaths(): void {
-    // TODO: Implement path drawing
-    // 1. Create meshes for each path node
-    // 2. Add visual indicators for spawn and end points
-    // 3. Add debug visualization for directions
-    console.log('Path drawing not yet implemented');
-  }
-
   update(deltaTime: number): void {
     // Update shader (needed for NoiseShader animation)
     this.terrainShader.update(deltaTime);
-
-    // TODO: Update any level animations/effects
   }
 
   getGroundHeight(x: number, z: number): number {
-    // TODO: Implement heightmap lookup
-    return 0;
+    return this.terrainGrid.getHeightAt(x, z);
+  }
+
+  canBuildTowerAt(x: number, z: number): boolean {
+    return this.terrainGrid.canPlaceEntity(x, z);
+  }
+
+  worldToGrid(worldPos: THREE.Vector3): { x: number; z: number } {
+    return this.terrainGrid.worldToGrid(worldPos);
+  }
+
+  gridToWorld(gridX: number, gridZ: number): THREE.Vector3 {
+    return this.terrainGrid.gridToWorld(gridX, gridZ);
+  }
+
+  getTerrainGrid(): TerrainGrid {
+    return this.terrainGrid;
   }
 
   getBoardCenter(): THREE.Vector3 {

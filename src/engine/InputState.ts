@@ -1,9 +1,14 @@
 import * as THREE from 'three';
 import { GameCamera } from './GameCamera';
+import { Config } from '../Config';
+
+export type InputCallback = (state: InputState) => void;
 
 export class InputState {
   // Raw input state
   private keys = new Set<string>();
+  private keysPressed = new Set<string>();
+  private keysReleased = new Set<string>();
   private mouseButtons = new Set<number>();
   private mouseButtonsPressed = new Set<number>();
   private currentMousePosition = new THREE.Vector2();
@@ -14,6 +19,10 @@ export class InputState {
   private worldPosition: THREE.Vector3 | null = null;
   private raycaster = new THREE.Raycaster();
   private groundMesh: THREE.Mesh | null = null;
+
+  // Event callbacks
+  private keyPressCallbacks: InputCallback[] = [];
+  private keyReleaseCallbacks: InputCallback[] = [];
 
   constructor(private camera: GameCamera) {
     // Mouse move - just store raw position
@@ -39,11 +48,24 @@ export class InputState {
       this.wheelDelta = Math.sign(e.deltaY);
     });
 
-    window.addEventListener('keydown', (e) => this.keys.add(e.key.toLowerCase()));
-    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    window.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      if (!this.keys.has(key)) {
+        this.keys.add(key);
+        this.keysPressed.add(key);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const key = e.key.toLowerCase();
+      this.keys.delete(key);
+      this.keysReleased.add(key);
+    });
 
     window.addEventListener('blur', () => {
       this.keys.clear();
+      this.keysPressed.clear();
+      this.keysReleased.clear();
       this.mouseButtons.clear();
       this.mouseButtonsPressed.clear();
     });
@@ -56,6 +78,16 @@ export class InputState {
   update() {
     // Update world position with current camera state
     this.updateWorldPosition();
+
+    // Handle key press callbacks
+    if (this.keysPressed.size > 0) {
+      this.keyPressCallbacks.forEach((callback) => callback(this));
+    }
+
+    // Handle key release callbacks
+    if (this.keysReleased.size > 0) {
+      this.keyReleaseCallbacks.forEach((callback) => callback(this));
+    }
   }
 
   endFrame() {
@@ -63,6 +95,8 @@ export class InputState {
     this.mouseDelta.set(0, 0);
     this.wheelDelta = 0;
     this.mouseButtonsPressed.clear();
+    this.keysPressed.clear();
+    this.keysReleased.clear();
   }
 
   private updateWorldPosition() {
@@ -78,6 +112,28 @@ export class InputState {
     }
   }
 
+  onKeyPress(callback: InputCallback): void {
+    this.keyPressCallbacks.push(callback);
+  }
+
+  onKeyRelease(callback: InputCallback): void {
+    this.keyReleaseCallbacks.push(callback);
+  }
+
+  removeKeyPressCallback(callback: InputCallback): void {
+    const index = this.keyPressCallbacks.indexOf(callback);
+    if (index !== -1) {
+      this.keyPressCallbacks.splice(index, 1);
+    }
+  }
+
+  removeKeyReleaseCallback(callback: InputCallback): void {
+    const index = this.keyReleaseCallbacks.indexOf(callback);
+    if (index !== -1) {
+      this.keyReleaseCallbacks.splice(index, 1);
+    }
+  }
+
   isMouseButtonDown(button: number): boolean {
     return this.mouseButtons.has(button);
   }
@@ -87,7 +143,15 @@ export class InputState {
   }
 
   isKeyPressed(key: string): boolean {
+    return this.keysPressed.has(key.toLowerCase());
+  }
+
+  isKeyDown(key: string): boolean {
     return this.keys.has(key.toLowerCase());
+  }
+
+  isKeyReleased(key: string): boolean {
+    return this.keysReleased.has(key.toLowerCase());
   }
 
   getMousePosition(): THREE.Vector2 {

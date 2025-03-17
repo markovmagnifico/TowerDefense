@@ -6,6 +6,8 @@ import { LevelData } from '../level/LevelTypes';
 import { GameCamera } from './GameCamera';
 import { Config } from '../Config';
 import { GameControls } from './GameControls';
+import { DebugSystem } from '../debug/DebugSystem';
+import { Debug } from '../debug/Debug';
 
 export class GameEngine {
   private scene: THREE.Scene;
@@ -15,6 +17,7 @@ export class GameEngine {
   private currentLevel: Level | null = null;
   private inputState: InputState;
   private gameControls: GameControls;
+  private debugSystem: DebugSystem;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -30,9 +33,15 @@ export class GameEngine {
     this.camera = new GameCamera(window.innerWidth / window.innerHeight);
     this.camera.initialize(this.renderer, new THREE.Vector3(0, 5, 5), new THREE.Vector3(0, 0, 0));
 
-    this.entityManager = new EntityManager(this.scene);
     this.inputState = new InputState(this.camera);
     this.gameControls = new GameControls(this.inputState);
+    this.debugSystem = new DebugSystem(this.scene, this.inputState);
+
+    const debug = new Debug(this.scene, this.camera);
+    this.debugSystem.addComponent(debug);
+
+    this.entityManager = new EntityManager(this.scene, this.debugSystem);
+
     this.gameControls.addControllable(this.camera);
 
     window.addEventListener('resize', this.handleResize.bind(this));
@@ -45,6 +54,8 @@ export class GameEngine {
 
     this.currentLevel = new Level(this.scene, levelData, this.entityManager);
     this.currentLevel.initialize();
+
+    this.debugSystem.createTerrainDebug(this.currentLevel.getTerrainGrid());
 
     this.inputState.setGroundMesh(this.currentLevel.getGroundMesh());
 
@@ -66,6 +77,7 @@ export class GameEngine {
     this.inputState.update();
     this.gameControls.update(deltaTime);
     this.entityManager.update(deltaTime);
+    this.debugSystem.update(deltaTime);
 
     if (this.currentLevel) {
       this.currentLevel.update(deltaTime);
@@ -103,5 +115,17 @@ export class GameEngine {
       throw new Error('Level not loaded');
     }
     return this.currentLevel;
+  }
+
+  getDebugSystem(): DebugSystem {
+    return this.debugSystem;
+  }
+
+  dispose(): void {
+    if (this.currentLevel) {
+      this.currentLevel.dispose();
+    }
+    this.entityManager.dispose();
+    this.debugSystem.dispose();
   }
 }
