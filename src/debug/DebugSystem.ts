@@ -50,7 +50,7 @@ export class DebugSystem {
 
   // Debug Factory methods
   createTerrainDebug(terrain: TerrainGrid): void {
-    const debug = new TerrainDebug(this.scene, terrain);
+    const debug = new TerrainDebug(this.scene, terrain, this.inputState);
     this.addComponent(debug);
     this.trackDebugComponent('terrain', terrain, debug);
   }

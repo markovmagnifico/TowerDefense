@@ -1,6 +1,6 @@
 export interface PathNode {
   x: number;
-  y: number;
+  z: number;
   directions: number[];
   type?: string;
   id?: string;

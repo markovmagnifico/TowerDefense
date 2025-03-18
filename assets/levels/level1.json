@@ -39,156 +39,176 @@
     "ground": {
       "pattern": "checkerboard",
       "colors": {
-        "primary": "@grass_light",
+        "primary": "@vibrant_sand",
         "secondary": "@stone_light",
-        "tertiary": "@stone_dark"
+        "tertiary": "@worn_stone"
       }
     }
   },
 
   "paths": {
-    "color": "@path",
+    "color": "@fertile_dirt",
     "nodes": [
       {
-        "x": 0,
-        "y": 5,
-        "directions": [0, 1, 0, 0],
+        "x": 10,
+        "z": 22,
+        "directions": [1, 0, 0, 0],
         "type": "spawn",
         "id": "main_entry"
       },
       {
-        "x": 1,
-        "y": 5,
-        "directions": [0, 1, 0, 0]
+        "x": 10,
+        "z": 21,
+        "directions": [1, 0, 0, 0]
       },
       {
-        "x": 2,
-        "y": 5,
-        "directions": [0, 1, 0, 0]
+        "x": 10,
+        "z": 20,
+        "directions": [1, 0, 0, 0]
       },
       {
-        "x": 3,
-        "y": 5,
-        "directions": [0, 1, 0, 0]
+        "x": 10,
+        "z": 19,
+        "directions": [0, 0, 0, 1]
       },
       {
-        "x": 4,
-        "y": 5,
-        "directions": [0, 1, 0, 0]
+        "x": 9,
+        "z": 19,
+        "directions": [0, 0, 0, 1]
+      },
+      {
+        "x": 8,
+        "z": 19,
+        "directions": [0, 0, 0, 1]
+      },
+      {
+        "x": 7,
+        "z": 19,
+        "directions": [0, 0, 0, 1]
+      },
+      {
+        "x": 6,
+        "z": 19,
+        "directions": [0, 0, 0, 1]
       },
       {
         "x": 5,
-        "y": 5,
-        "directions": [0, 0, 1, 0]
+        "z": 19,
+        "directions": [1, 0, 0, 0]
       },
       {
         "x": 5,
-        "y": 6,
-        "directions": [0, 0, 1, 0]
+        "z": 18,
+        "directions": [1, 0, 0, 0]
       },
       {
         "x": 5,
-        "y": 7,
-        "directions": [0, 0, 1, 0]
+        "z": 17,
+        "directions": [1, 0, 0, 0]
       },
       {
         "x": 5,
-        "y": 8,
+        "z": 16,
+        "directions": [1, 0, 0, 0]
+      },
+      {
+        "x": 5,
+        "z": 15,
+        "directions": [1, 0, 0, 0]
+      },
+      {
+        "x": 5,
+        "z": 14,
+        "directions": [1, 0, 0, 0]
+      },
+      {
+        "x": 5,
+        "z": 13,
+        "directions": [1, 0, 0, 0]
+      },
+      {
+        "x": 5,
+        "z": 12,
+        "directions": [1, 0, 0, 0]
+      },
+      {
+        "x": 5,
+        "z": 11,
+        "directions": [1, 0, 0, 0]
+      },
+      {
+        "x": 5,
+        "z": 10,
         "directions": [0, 1, 0, 0]
       },
       {
         "x": 6,
-        "y": 8,
+        "z": 10,
         "directions": [0, 1, 0, 0]
       },
       {
         "x": 7,
-        "y": 8,
+        "z": 10,
         "directions": [0, 1, 0, 0]
       },
       {
         "x": 8,
-        "y": 8,
+        "z": 10,
         "directions": [0, 1, 0, 0]
       },
       {
         "x": 9,
-        "y": 8,
-        "directions": [0, 0, 1, 0]
-      },
-      {
-        "x": 9,
-        "y": 9,
-        "directions": [0, 0, 1, 0]
-      },
-      {
-        "x": 9,
-        "y": 10,
+        "z": 10,
         "directions": [0, 1, 0, 0]
       },
       {
         "x": 10,
-        "y": 10,
+        "z": 10,
         "directions": [0, 1, 0, 0]
       },
       {
         "x": 11,
-        "y": 10,
-        "directions": [0, 1, 0, 0]
-      },
-      {
-        "x": 12,
-        "y": 10,
+        "z": 10,
         "directions": [1, 0, 0, 0]
       },
       {
-        "x": 12,
-        "y": 9,
+        "x": 11,
+        "z": 9,
         "directions": [1, 0, 0, 0]
       },
       {
-        "x": 12,
-        "y": 8,
+        "x": 11,
+        "z": 8,
         "directions": [1, 0, 0, 0]
       },
       {
-        "x": 12,
-        "y": 7,
-        "directions": [0, 1, 0, 0]
+        "x": 11,
+        "z": 7,
+        "directions": [1, 0, 0, 0]
       },
       {
-        "x": 13,
-        "y": 7,
-        "directions": [0, 1, 0, 0]
+        "x": 11,
+        "z": 6,
+        "directions": [1, 0, 0, 0]
       },
       {
-        "x": 14,
-        "y": 7,
-        "directions": [0, 1, 0, 0]
+        "x": 11,
+        "z": 5,
+        "directions": [1, 0, 0, 0]
       },
       {
-        "x": 15,
-        "y": 7,
-        "directions": [0, 1, 0, 0]
+        "x": 11,
+        "z": 4,
+        "directions": [1, 0, 0, 0]
       },
       {
-        "x": 16,
-        "y": 7,
-        "directions": [0, 1, 0, 0]
+        "x": 11,
+        "z": 3,
+        "directions": [1, 0, 0, 0]
       },
       {
-        "x": 17,
-        "y": 7,
-        "directions": [0, 1, 0, 0]
-      },
-      {
-        "x": 18,
-        "y": 7,
-        "directions": [0, 1, 0, 0]
-      },
-      {
-        "x": 19,
-        "y": 7,
+        "x": 11,
+        "z": 2,
         "directions": [0, 0, 0, 0],
         "type": "end"
       }

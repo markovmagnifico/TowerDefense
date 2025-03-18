@@ -16,6 +16,7 @@ type ColorName = keyof ColorMap;
 export class Level {
   private scene: THREE.Scene;
   private ground: THREE.Mesh | null = null;
+  private pathMesh: THREE.Mesh | null = null;
   private levelData: LevelData;
   private entityManager: EntityManager;
   private terrainGrid: TerrainGrid;
@@ -41,16 +42,106 @@ export class Level {
     return colorRef;
   }
 
+  private createPathGeometry(): THREE.Mesh {
+    const geometry = new THREE.BufferGeometry();
+    const positions: number[] = [];
+    const indices: number[] = [];
+    const colors: number[] = [];
+
+    // Convert path color to THREE.Color
+    const pathColor = new THREE.Color(this.resolveColor(this.levelData.paths.color));
+    const pathColorHSL = { h: 0, s: 0, l: 0 };
+    pathColor.getHSL(pathColorHSL);
+
+    // Create vertices and faces for each path cell
+    let vertexIndex = 0;
+
+    this.terrainGrid.forEachCell((x, z, cell) => {
+      if (
+        cell.type === CellType.PATH ||
+        cell.type === CellType.SPAWN ||
+        cell.type === CellType.END
+      ) {
+        // Get height at cell corners
+        const h00 = this.terrainGrid.getGridHeight(x, z);
+        const h10 = this.terrainGrid.getGridHeight(x + 1, z);
+        const h01 = this.terrainGrid.getGridHeight(x, z + 1);
+        const h11 = this.terrainGrid.getGridHeight(x + 1, z + 1);
+
+        // Small offset above terrain to prevent z-fighting
+        const heightOffset = 0.02;
+
+        // Add vertices for this cell
+        positions.push(
+          x * Config.TILE_SIZE,
+          h00 + heightOffset,
+          z * Config.TILE_SIZE,
+          (x + 1) * Config.TILE_SIZE,
+          h10 + heightOffset,
+          z * Config.TILE_SIZE,
+          x * Config.TILE_SIZE,
+          h01 + heightOffset,
+          (z + 1) * Config.TILE_SIZE,
+          (x + 1) * Config.TILE_SIZE,
+          h11 + heightOffset,
+          (z + 1) * Config.TILE_SIZE
+        );
+
+        // Add colors with variation for each vertex
+        for (let i = 0; i < 4; i++) {
+          // Create slight random variations in lightness and saturation
+          const variantColor = new THREE.Color();
+          const lightness = pathColorHSL.l * (0.8 + Math.random() * 0.4); // ±20% variation
+          const saturation = pathColorHSL.s * (0.95 + Math.random() * 0.1); // ±5% variation
+          variantColor.setHSL(pathColorHSL.h, saturation, lightness);
+          colors.push(variantColor.r, variantColor.g, variantColor.b);
+        }
+
+        // Add faces (triangles)
+        indices.push(
+          vertexIndex,
+          vertexIndex + 1,
+          vertexIndex + 2,
+          vertexIndex + 2,
+          vertexIndex + 1,
+          vertexIndex + 3
+        );
+
+        vertexIndex += 4;
+      }
+    });
+
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    const material = new THREE.MeshPhongMaterial({
+      vertexColors: true,
+      transparent: false,
+      opacity: 0.7,
+      side: THREE.DoubleSide,
+      depthWrite: false, // Prevents z-fighting with terrain
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    return mesh;
+  }
+
   initialize(): void {
     // Create and add ground
     this.ground = this.createGround();
     this.scene.add(this.ground);
 
-    // Create lights as entities
-    this.createLights();
-
     // Initialize paths in terrain grid
     this.initializePaths();
+
+    // Create and add path visualization
+    this.pathMesh = this.createPathGeometry();
+    this.scene.add(this.pathMesh);
+
+    // Create lights as entities
+    this.createLights();
   }
 
   private initializePaths(): void {
@@ -58,7 +149,7 @@ export class Level {
     this.levelData.paths.nodes.forEach((node) => {
       const type =
         node.type === 'spawn' ? CellType.SPAWN : node.type === 'end' ? CellType.END : CellType.PATH;
-      this.terrainGrid.setCellType(node.x, node.y, type);
+      this.terrainGrid.setCellType(node.x, node.z, type, node.directions);
     });
   }
 
@@ -179,6 +270,16 @@ export class Level {
         this.ground.material.dispose();
       }
       this.scene.remove(this.ground);
+    }
+
+    if (this.pathMesh) {
+      this.pathMesh.geometry.dispose();
+      if (Array.isArray(this.pathMesh.material)) {
+        this.pathMesh.material.forEach((m) => m.dispose());
+      } else {
+        this.pathMesh.material.dispose();
+      }
+      this.scene.remove(this.pathMesh);
     }
   }
 }

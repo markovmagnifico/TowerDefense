@@ -14,6 +14,7 @@ export enum CellType {
 interface GridCell {
   type: CellType;
   entity: Entity | null;
+  directions?: number[]; // [up, right, down, left]
 }
 
 export type HeightCallback = (x: number, z: number) => number;
@@ -48,9 +49,12 @@ export class TerrainGrid {
     return CellType.BLOCKED;
   }
 
-  setCellType(gridX: number, gridZ: number, type: CellType): boolean {
+  setCellType(gridX: number, gridZ: number, type: CellType, directions?: number[]): boolean {
     if (this.isValidGridPosition(gridX, gridZ)) {
       this.cells[gridZ][gridX].type = type;
+      if (directions) {
+        this.cells[gridZ][gridX].directions = directions;
+      }
       return true;
     }
     return false;
@@ -147,5 +151,12 @@ export class TerrainGrid {
 
   createHeightCallback(): HeightCallback {
     return (x: number, z: number) => this.getHeightAt(x, z);
+  }
+
+  getPathDirections(gridX: number, gridZ: number): number[] {
+    if (this.isValidGridPosition(gridX, gridZ)) {
+      return this.cells[gridZ][gridX].directions || [0, 0, 0, 0];
+    }
+    return [0, 0, 0, 0];
   }
 }

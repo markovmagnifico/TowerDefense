@@ -15,6 +15,7 @@ interface DebugControl {
 
 export class Debug extends DebugComponent {
   private axisHelper: THREE.AxesHelper;
+  private axisLabels: THREE.Sprite[] = [];
   private controls: DebugControl[] = [];
   private stats: Stats;
   private gui: GUI;
@@ -40,6 +41,48 @@ export class Debug extends DebugComponent {
     this.axisHelper = new THREE.AxesHelper(Config.DEBUG.AXIS_HELPER_SIZE);
     this.axisHelper.visible = false;
     scene.add(this.axisHelper);
+
+    // Create axis labels
+    this.createAxisLabels();
+  }
+
+  private createAxisLabels(): void {
+    const labels = ['X', 'Y', 'Z'];
+    const colors = [0xff0000, 0x00ff00, 0x0000ff]; // Red, Green, Blue to match Three.js axes
+    const positions = [
+      new THREE.Vector3(Config.DEBUG.AXIS_HELPER_SIZE + 0.5, 0, 0),
+      new THREE.Vector3(0, Config.DEBUG.AXIS_HELPER_SIZE + 0.5, 0),
+      new THREE.Vector3(0, 0, Config.DEBUG.AXIS_HELPER_SIZE + 0.5),
+    ];
+
+    labels.forEach((label, index) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      canvas.width = 64;
+      canvas.height = 64;
+
+      // Create label texture
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#' + colors[index].toString(16).padStart(6, '0');
+      ctx.fillText(label, canvas.width / 2, canvas.height / 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({
+        map: texture,
+        sizeAttenuation: false,
+      });
+
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.position.copy(positions[index]);
+      sprite.scale.set(0.05, 0.05, 1);
+      sprite.visible = false;
+      this.axisLabels.push(sprite);
+      this.scene.add(sprite);
+    });
   }
 
   private setStatsPosition(position: string) {
@@ -97,6 +140,7 @@ export class Debug extends DebugComponent {
 
   protected onToggle(enabled: boolean): void {
     this.axisHelper.visible = enabled;
+    this.axisLabels.forEach((label) => (label.visible = enabled));
     this.stats.dom.style.display = enabled ? 'block' : 'none';
     if (enabled) {
       this.gui.show();
@@ -113,6 +157,11 @@ export class Debug extends DebugComponent {
 
   dispose(): void {
     this.scene.remove(this.axisHelper);
+    this.axisLabels.forEach((label) => {
+      (label.material as THREE.SpriteMaterial).map?.dispose();
+      (label.material as THREE.Material).dispose();
+      this.scene.remove(label);
+    });
     document.body.removeChild(this.stats.dom);
     this.gui.destroy();
   }
