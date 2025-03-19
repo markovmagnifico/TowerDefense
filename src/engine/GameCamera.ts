@@ -1,13 +1,16 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Config } from '../Config';
-import { Controllable } from './Controllable';
+import { Interactable } from './Interactable';
 import { InputState } from './InputState';
+import { InteractionPriority } from './InteractionManager';
 
-export class GameCamera implements Controllable {
+export class GameCamera implements Interactable {
   private camera: THREE.PerspectiveCamera;
   private controls!: OrbitControls;
   public movementSpeed: number;
+  public isSelected = false;
+  public priority = InteractionPriority.WORLD;
 
   constructor(aspect: number) {
     this.camera = new THREE.PerspectiveCamera(
@@ -38,10 +41,10 @@ export class GameCamera implements Controllable {
     const forward = this.getForwardDirection();
     const right = this.getRightDirection();
 
-    if (input.isKeyPressed('w')) moveDirection.add(forward);
-    if (input.isKeyPressed('s')) moveDirection.sub(forward);
-    if (input.isKeyPressed('d')) moveDirection.add(right);
-    if (input.isKeyPressed('a')) moveDirection.sub(right);
+    if (input.isKeyDown('w')) moveDirection.add(forward);
+    if (input.isKeyDown('s')) moveDirection.sub(forward);
+    if (input.isKeyDown('d')) moveDirection.add(right);
+    if (input.isKeyDown('a')) moveDirection.sub(right);
 
     if (moveDirection.length() > 0) {
       moveDirection.normalize();

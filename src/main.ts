@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { GameEngine } from './engine/GameEngine';
 import { Config } from './Config';
 import { Player } from './entities/Player';
+import { BuildBar } from './ui/BuildBar';
+import { InteractionPriority } from './engine/InteractionManager';
 import level1 from '../assets/levels/level1.json';
 
 // Initialize game engine
@@ -16,12 +18,16 @@ engine.loadLevel(level1);
 const terrainGrid = engine.getLevel().getTerrainGrid();
 const player = new Player(engine.getScene(), terrainGrid.createHeightCallback(), level1.dimensions);
 engine.getEntityManager().addEntity('player', player);
-engine.getGameControls().addControllable(player);
+engine.getInteractionManager().addInteractable(player);
 player.setPosition(
   engine.getLevel().getBoardCenter().x,
   Config.DRONE.MOVEMENT.HOVER_HEIGHT,
   engine.getLevel().getBoardCenter().z
 );
+
+// Initialize UI
+const buildBar = new BuildBar();
+engine.getInteractionManager().addInteractable(buildBar);
 
 // Track last time for delta time calculation
 let lastTime = performance.now();

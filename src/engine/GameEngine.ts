@@ -5,7 +5,7 @@ import { InputState } from './InputState';
 import { LevelData } from '../level/LevelTypes';
 import { GameCamera } from './GameCamera';
 import { Config } from '../Config';
-import { GameControls } from './GameControls';
+import { InteractionManager, InteractionPriority } from './InteractionManager';
 import { DebugSystem } from '../debug/DebugSystem';
 import { Debug } from '../debug/Debug';
 
@@ -16,7 +16,7 @@ export class GameEngine {
   private entityManager: EntityManager;
   private currentLevel: Level | null = null;
   private inputState: InputState;
-  private gameControls: GameControls;
+  private interactionManager: InteractionManager;
   private debugSystem: DebugSystem;
 
   constructor(canvas: HTMLCanvasElement) {
@@ -34,7 +34,7 @@ export class GameEngine {
     this.camera.initialize(this.renderer, new THREE.Vector3(0, 5, 5), new THREE.Vector3(0, 0, 0));
 
     this.inputState = new InputState(this.camera);
-    this.gameControls = new GameControls(this.inputState);
+    this.interactionManager = new InteractionManager(this.inputState);
     this.debugSystem = new DebugSystem(this.scene, this.inputState);
 
     const debug = new Debug(this.scene, this.camera);
@@ -42,7 +42,8 @@ export class GameEngine {
 
     this.entityManager = new EntityManager(this.scene, this.debugSystem);
 
-    this.gameControls.addControllable(this.camera);
+    // Add camera to interaction manager
+    this.interactionManager.addInteractable(this.camera);
 
     window.addEventListener('resize', this.handleResize.bind(this));
   }
@@ -75,7 +76,7 @@ export class GameEngine {
   update(deltaTime: number): void {
     this.camera.update();
     this.inputState.update();
-    this.gameControls.update(deltaTime);
+    this.interactionManager.update(deltaTime);
     this.entityManager.update(deltaTime);
     this.debugSystem.update(deltaTime);
 
@@ -106,8 +107,8 @@ export class GameEngine {
     return this.entityManager;
   }
 
-  getGameControls(): GameControls {
-    return this.gameControls;
+  getInteractionManager(): InteractionManager {
+    return this.interactionManager;
   }
 
   getLevel(): Level {

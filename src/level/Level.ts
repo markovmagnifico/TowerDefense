@@ -69,7 +69,7 @@ export class Level {
         const h11 = this.terrainGrid.getGridHeight(x + 1, z + 1);
 
         // Small offset above terrain to prevent z-fighting
-        const heightOffset = 0.02;
+        const heightOffset = 0.03;
 
         // Add vertices for this cell
         positions.push(

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GameCamera } from './GameCamera';
 import { Config } from '../Config';
+import { Interactable } from './Interactable';
 
 export type InputCallback = (state: InputState) => void;
 
@@ -14,6 +15,9 @@ export class InputState {
   private currentMousePosition = new THREE.Vector2();
   private mouseDelta = new THREE.Vector2();
   private wheelDelta = 0;
+
+  // Selection state
+  private selectedInteractable: Interactable | null = null;
 
   // Processed state - updated once per frame
   private worldPosition: THREE.Vector3 | null = null;
@@ -88,6 +92,8 @@ export class InputState {
     if (this.keysReleased.size > 0) {
       this.keyReleaseCallbacks.forEach((callback) => callback(this));
     }
+
+    // Selection clearing is now handled by InteractionManager after all interactables have had a chance to handle input
   }
 
   endFrame() {
@@ -168,5 +174,26 @@ export class InputState {
 
   getWorldPosition(): THREE.Vector3 | null {
     return this.worldPosition?.clone() ?? null;
+  }
+
+  setSelection(interactable: Interactable | null) {
+    // Clear previous selection
+    if (this.selectedInteractable && this.selectedInteractable !== interactable) {
+      this.selectedInteractable.isSelected = false;
+    }
+
+    // Set new selection
+    this.selectedInteractable = interactable;
+    if (interactable) {
+      interactable.isSelected = true;
+    }
+  }
+
+  clearSelection() {
+    this.setSelection(null);
+  }
+
+  getSelectedInteractable(): Interactable | null {
+    return this.selectedInteractable;
   }
 }

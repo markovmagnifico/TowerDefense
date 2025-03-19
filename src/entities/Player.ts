@@ -2,15 +2,18 @@ import * as THREE from 'three';
 import { Config } from '../Config';
 import { Entity } from './Entity';
 import { InputState } from '../engine/InputState';
-import { Controllable } from '../engine/Controllable';
+import { Interactable } from '../engine/Interactable';
 import { HeightCallback } from '../level/TerrainGrid';
 import { GridDimensions } from '../level/LevelTypes';
+import { InteractionPriority } from '../engine/InteractionManager';
 
-export class Player extends Entity implements Controllable {
+export class Player extends Entity implements Interactable {
   private bodyGroup: THREE.Group;
   private body!: THREE.Mesh;
   private rotors: THREE.Mesh[] = [];
   private rotorGroups: THREE.Group[] = [];
+  public isSelected = false;
+  public priority = InteractionPriority.WORLD;
 
   private targetPoint: THREE.Vector3 | null = null;
   private currentPath: THREE.CubicBezierCurve3 | null = null;
@@ -41,7 +44,7 @@ export class Player extends Entity implements Controllable {
   }
 
   handleInput(input: InputState): void {
-    if (input.isMouseButtonPressed(0)) {
+    if (input.isMouseButtonPressed(2)) {
       const worldPos = input.getWorldPosition();
       if (worldPos) {
         const groundHeight = this.getGroundHeight(worldPos.x, worldPos.z);

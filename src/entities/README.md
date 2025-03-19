@@ -1,6 +1,39 @@
-# Game Entities
+# Entities
 
-This folder contains all game entities that can exist in the game world. Each entity extends the base `Entity` class and can be managed by the `EntityManager`.
+Entities are the core game objects in the tower defense game. They are managed by the `EntityManager` and can be updated each frame.
+
+## Entity Types
+
+```
+Entity
+├── Player
+└── Tower (coming soon)
+```
+
+## Entity Base Class
+
+The `Entity` base class provides:
+
+- A Three.js Object3D for positioning and hierarchy
+- Update method for frame-by-frame updates
+- Disposal method for cleanup
+
+## Interactable Interface
+
+Some entities implement the `Interactable` interface:
+
+- Player (movement and control)
+- Tower (selection and upgrades)
+
+## Component Diagram
+
+```
+│ Entity      │
+├─────────────┤
+│ Object3D    │
+│ Interactable│
+└─────────────┘
+```
 
 ## Entity Architecture
 
@@ -60,13 +93,13 @@ Entity
    - Configurable intensities and colors
    - Shadows and environmental effects
 
-## Controllable Interface
+## Interactable Interface
 
-Some entities implement the `Controllable` interface:
+Some entities implement the `Interactable` interface:
 
 ```ascii
 ┌───────────────┐
-│ Controllable  │
+│ Interactable  │
 └───────┬───────┘
         │
     handleInput()
