@@ -3,7 +3,6 @@ import { GameEngine } from './engine/GameEngine';
 import { Config } from './Config';
 import { Player } from './entities/Player';
 import { BuildBar } from './ui/BuildBar';
-import { InteractionPriority } from './engine/InteractionManager';
 import level1 from '../assets/levels/level1.json';
 
 // Initialize game engine

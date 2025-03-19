@@ -242,6 +242,10 @@ export class Level {
     return this.terrainGrid;
   }
 
+  getLevelData(): LevelData {
+    return this.levelData;
+  }
+
   getBoardCenter(): THREE.Vector3 {
     return new THREE.Vector3(
       this.levelData.dimensions.width / 2,
@@ -254,10 +258,7 @@ export class Level {
     return Math.max(this.levelData.dimensions.width, this.levelData.dimensions.height);
   }
 
-  getGroundMesh(): THREE.Mesh {
-    if (!this.ground) {
-      throw new Error('Ground mesh not initialized');
-    }
+  getGroundMesh(): THREE.Mesh | null {
     return this.ground;
   }
 

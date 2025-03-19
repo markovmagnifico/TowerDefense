@@ -213,5 +213,41 @@
         "type": "end"
       }
     ]
-  }
+  },
+
+  "waves": [
+    {
+      "id": "wave_1",
+      "name": "Wave 1",
+      "spawns": [
+        {
+          "path_id": "main_entry",
+          "enemies": [{ "type": "cube", "count": 10 }]
+        }
+      ]
+    },
+    {
+      "id": "wave_2",
+      "name": "Wave 2",
+      "spawns": [
+        {
+          "path_id": "main_entry",
+          "enemies": [{ "type": "cube", "count": 15 }]
+        }
+      ]
+    },
+    {
+      "id": "wave_3",
+      "name": "Wave 3 - Boss Wave",
+      "spawns": [
+        {
+          "path_id": "main_entry",
+          "enemies": [
+            { "type": "cube", "count": 20 },
+            { "type": "boss_cube", "count": 1 }
+          ]
+        }
+      ]
+    }
+  ]
 }

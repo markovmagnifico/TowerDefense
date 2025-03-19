@@ -8,6 +8,8 @@ import { Config } from '../Config';
 import { InteractionManager, InteractionPriority } from './InteractionManager';
 import { DebugSystem } from '../debug/DebugSystem';
 import { Debug } from '../debug/Debug';
+import { WaveManager } from '../level/WaveManager';
+import { WaveUI } from '../ui/WaveUI';
 
 export class GameEngine {
   private scene: THREE.Scene;
@@ -18,6 +20,8 @@ export class GameEngine {
   private inputState: InputState;
   private interactionManager: InteractionManager;
   private debugSystem: DebugSystem;
+  private waveManager: WaveManager;
+  private waveUI: WaveUI;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -34,7 +38,7 @@ export class GameEngine {
     this.camera.initialize(this.renderer, new THREE.Vector3(0, 5, 5), new THREE.Vector3(0, 0, 0));
 
     this.inputState = new InputState(this.camera);
-    this.interactionManager = new InteractionManager(this.inputState);
+    this.interactionManager = new InteractionManager();
     this.debugSystem = new DebugSystem(this.scene, this.inputState);
 
     const debug = new Debug(this.scene, this.camera);
@@ -44,6 +48,13 @@ export class GameEngine {
 
     // Add camera to interaction manager
     this.interactionManager.addInteractable(this.camera);
+
+    // Initialize Wave UI and Manager
+    this.waveUI = new WaveUI();
+    this.interactionManager.addInteractable(this.waveUI, InteractionPriority.MACRO_UI);
+
+    // Create WaveManager with null Level - will be properly initialized in loadLevel
+    this.waveManager = new WaveManager(this.waveUI, this.entityManager, null);
 
     window.addEventListener('resize', this.handleResize.bind(this));
   }
@@ -58,7 +69,11 @@ export class GameEngine {
 
     this.debugSystem.createTerrainDebug(this.currentLevel.getTerrainGrid());
 
-    this.inputState.setGroundMesh(this.currentLevel.getGroundMesh());
+    const groundMesh = this.currentLevel.getGroundMesh();
+    if (!groundMesh) {
+      throw new Error('Ground mesh not created during level initialization');
+    }
+    this.inputState.setGroundMesh(groundMesh);
 
     const center = this.currentLevel.getBoardCenter();
     const size = this.currentLevel.getBoardSize();
@@ -71,18 +86,26 @@ export class GameEngine {
       ),
       center
     );
+
+    // Initialize wave system with new level
+    this.waveManager.setLevel(this.currentLevel);
+    this.waveManager.initialize(levelData.waves);
+    this.waveUI.setNextWaveCallback(() => this.waveManager.startNextWave());
   }
 
   update(deltaTime: number): void {
     this.camera.update();
     this.inputState.update();
-    this.interactionManager.update(deltaTime);
+    this.interactionManager.handleInput(this.inputState, deltaTime);
     this.entityManager.update(deltaTime);
     this.debugSystem.update(deltaTime);
 
     if (this.currentLevel) {
       this.currentLevel.update(deltaTime);
     }
+
+    // Update wave manager
+    this.waveManager.update(deltaTime);
 
     this.renderer.render(this.scene, this.camera.getCamera());
     this.inputState.endFrame();
@@ -128,5 +151,7 @@ export class GameEngine {
     }
     this.entityManager.dispose();
     this.debugSystem.dispose();
+    this.waveUI.dispose();
+    window.removeEventListener('resize', this.handleResize.bind(this));
   }
 }

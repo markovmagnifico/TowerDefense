@@ -1,0 +1,31 @@
+{
+  "enemies": {
+    "cube": {
+      "name": "Cube",
+      "health": 100,
+      "speed": 1.0,
+      "attack": 10,
+      "abilities": []
+    },
+    "boss_cube": {
+      "name": "Boss Cube",
+      "health": 500,
+      "speed": 0.7,
+      "attack": 25,
+      "abilities": ["slow_aura"]
+    }
+  },
+
+  "abilities": {
+    "slow_aura": {
+      "name": "Slow Aura",
+      "description": "Reduces the attack speed of nearby towers by 30%",
+      "radius": 3.0,
+      "effect": {
+        "type": "tower_debuff",
+        "stat": "attack_speed",
+        "amount": -0.3
+      }
+    }
+  }
+}

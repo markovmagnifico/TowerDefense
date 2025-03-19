@@ -11,6 +11,20 @@ export interface GridDimensions {
   height: number;
 }
 
+export interface WaveSpawn {
+  path_id: string;
+  enemies: Array<{
+    type: string;
+    count: number;
+  }>;
+}
+
+export interface WaveData {
+  id: string;
+  name: string;
+  spawns: WaveSpawn[];
+}
+
 export interface LevelData {
   metadata: {
     id: string;
@@ -33,4 +47,5 @@ export interface LevelData {
     color: string;
     nodes: PathNode[];
   };
+  waves: WaveData[];
 }

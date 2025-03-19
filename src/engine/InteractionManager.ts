@@ -1,35 +1,53 @@
+import * as THREE from 'three';
 import { InputState } from './InputState';
 import { Interactable } from './Interactable';
 
 export enum InteractionPriority {
-  MACRO_UI = 100, // Escape menu, build bar
-  TOWER_UI = 80, // Tower radial menus
-  ENEMY_UI = 60, // Enemy health bars, info
-  WORLD = 40, // World interactions (placing towers, moving player)
+  MACRO_UI = 3,
+  TOWER_UI = 2,
+  ENEMY_UI = 1,
+  WORLD = 0,
 }
 
 export class InteractionManager {
-  private interactables: Interactable[] = [];
+  private interactables: Map<Interactable, InteractionPriority> = new Map();
+  private raycaster: THREE.Raycaster;
+  private mouse: THREE.Vector2;
 
-  addInteractable(interactable: Interactable): void {
-    this.interactables.push(interactable);
-    // Sort by priority (highest first)
-    this.interactables.sort((a, b) => b.priority - a.priority);
+  constructor() {
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+  }
+
+  addInteractable(
+    interactable: Interactable,
+    priority: InteractionPriority = InteractionPriority.WORLD
+  ): void {
+    this.interactables.set(interactable, priority);
   }
 
   removeInteractable(interactable: Interactable): void {
-    const index = this.interactables.findIndex((item) => item === interactable);
-    if (index !== -1) {
-      this.interactables.splice(index, 1);
+    this.interactables.delete(interactable);
+  }
+
+  handleInput(input: InputState, deltaTime: number): void {
+    // Convert interactables map to array and sort by priority
+    const sortedInteractables = Array.from(this.interactables.entries())
+      .sort(([, a], [, b]) => b - a)
+      .map(([interactable]) => interactable);
+
+    // Update mouse position for raycaster
+    const mousePos = input.getMousePosition();
+    this.mouse.x = mousePos.x;
+    this.mouse.y = mousePos.y;
+
+    // Handle input for each interactable in priority order
+    for (const interactable of sortedInteractables) {
+      interactable.handleInput(input, deltaTime);
     }
   }
 
-  update(deltaTime: number): void {
-    // Update in priority order (already sorted)
-    for (const interactable of this.interactables) {
-      interactable.handleInput(this.input, deltaTime);
-    }
+  dispose(): void {
+    this.interactables.clear();
   }
-
-  constructor(private input: InputState) {}
 }
