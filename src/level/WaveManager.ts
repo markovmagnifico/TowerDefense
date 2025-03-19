@@ -3,6 +3,9 @@ import { Enemy } from '../entities/Enemy';
 import { WaveData } from './LevelTypes';
 import { EntityManager } from '../engine/EntityManager';
 import { Level } from './Level';
+import { SlimeEnemy } from '../entities/enemies/SlimeEnemy';
+import { BossCubeEnemy } from '../entities/enemies/BossCubeEnemy';
+import { TerrainGrid } from './TerrainGrid';
 
 export enum WaveState {
   WAITING, // Waiting for player to start wave
@@ -10,6 +13,14 @@ export enum WaveState {
   IN_PROGRESS, // All enemies spawned, waiting for completion
   COMPLETED, // Wave is done
 }
+
+// Map enemy type strings to their constructor functions
+const EnemyTypeMap: {
+  [key: string]: new (terrainGrid: TerrainGrid, spawnPoint: { x: number; z: number }) => Enemy;
+} = {
+  cube: SlimeEnemy,
+  boss_cube: BossCubeEnemy,
+};
 
 export class WaveManager {
   private currentWaveIndex: number = -1;
@@ -99,8 +110,17 @@ export class WaveManager {
       return;
     }
 
+    const EnemyConstructor = EnemyTypeMap[type];
+    if (!EnemyConstructor) {
+      console.error(`Unknown enemy type: ${type}`);
+      return;
+    }
+
     const enemyId = `enemy_${Date.now()}`;
-    const enemy = new Enemy(type, this.level.getTerrainGrid(), { x: spawnNode.x, z: spawnNode.z });
+    const enemy = new EnemyConstructor(this.level.getTerrainGrid(), {
+      x: spawnNode.x,
+      z: spawnNode.z,
+    });
 
     this.activeEnemies.set(enemyId, enemy);
     this.entityManager.addEntity(enemyId, enemy);

@@ -3,43 +3,34 @@ import { Entity } from './Entity';
 import { InputState } from '../engine/InputState';
 import { Interactable } from '../engine/Interactable';
 import { InteractionPriority } from '../engine/InteractionManager';
-import { EnemyTypes } from './EnemyTypes';
 import { TerrainGrid, CellType } from '../level/TerrainGrid';
 
-export class Enemy extends Entity implements Interactable {
+export abstract class Enemy extends Entity implements Interactable {
   public isSelected = false;
   public priority = InteractionPriority.ENEMY_UI;
-  private mesh: THREE.Mesh;
-  private health: number;
-  private speed: number;
-  private currentGridPos: { x: number; z: number };
-  private reachedEnd: boolean = false;
-  private lastDirection: { x: number; z: number } | null = null;
+  protected currentGridPos: { x: number; z: number };
+  protected reachedEnd: boolean = false;
+  protected lastDirection: { x: number; z: number } | null = null;
 
   constructor(
-    private type: string,
-    private terrainGrid: TerrainGrid,
-    spawnPoint: { x: number; z: number }
+    protected terrainGrid: TerrainGrid,
+    spawnPoint: { x: number; z: number },
+    protected speed: number,
+    protected health: number,
+    protected height: number
   ) {
     super();
-
-    const config = EnemyTypes[type];
-    if (!config) throw new Error(`Unknown enemy type: ${type}`);
-
-    this.health = config.health;
-    this.speed = config.speed;
     this.currentGridPos = { ...spawnPoint };
 
-    // Create mesh from config
-    this.mesh = new THREE.Mesh(config.geometry(), config.material());
-    this.mesh.scale.copy(config.scale);
-    this.object3D.add(this.mesh);
-
-    // Set initial position
-    const worldPos = terrainGrid.gridToWorld(spawnPoint.x, spawnPoint.z);
+    // Initialize position
+    const worldPos = this.terrainGrid.gridToWorld(spawnPoint.x, spawnPoint.z);
     this.object3D.position.copy(worldPos);
-    this.object3D.position.y = config.height;
+    this.object3D.position.y = this.height;
   }
+
+  // Abstract methods that each enemy type must implement
+  protected abstract createGeometry(): void;
+  protected abstract updateAnimation(deltaTime: number): void;
 
   handleInput(_input: InputState, _deltaTime: number): void {
     // Enemy input handling will be implemented later
@@ -85,6 +76,9 @@ export class Enemy extends Entity implements Interactable {
       currentPos.add(movement);
       this.object3D.rotation.y = Math.atan2(direction.x, direction.z);
     }
+
+    // Update animation
+    this.updateAnimation(deltaTime);
   }
 
   private chooseNextDirection(directions: number[]): { x: number; z: number } | null {

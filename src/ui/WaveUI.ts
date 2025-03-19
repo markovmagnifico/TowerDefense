@@ -36,69 +36,161 @@ export class WaveUI extends HTMLUIElement {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: rgba(0, 0, 0, 0.7);
+        background: linear-gradient(
+          to bottom,
+          rgba(60, 45, 30, 0.95),
+          rgba(40, 30, 20, 0.95)
+        );
         padding: 15px;
-        border-radius: 10px;
-        color: white;
-        font-family: Arial, sans-serif;
-        min-width: 200px;
+        border-radius: 8px;
+        color: #d4c4a8;
+        font-family: 'Cinzel', serif;
+        min-width: 240px;
+        box-shadow: 
+          0 0 0 1px #000,
+          inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+          0 0 10px rgba(0, 0, 0, 0.5);
+        border: 2px solid #483828;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      }
+
+      .wave-ui::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAAkSURBVHjaYvz//z8DAwMDAxMDEFy9ehXIZARiIGYEYkYGgABjAAzJA6lk+dZkAAAAAElFTkSuQmCC');
+        opacity: 0.05;
+        border-radius: 6px;
+        pointer-events: none;
       }
 
       .wave-header {
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #4a9eff;
+        font-size: 20px;
+        margin-bottom: 12px;
+        color: #ffd700;
+        text-align: center;
+        letter-spacing: 1px;
+        position: relative;
+      }
+
+      .wave-header::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 10%;
+        right: 10%;
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          #ffd700,
+          transparent
+        );
       }
 
       .wave-info {
-        font-size: 14px;
-        margin-bottom: 5px;
+        font-size: 16px;
+        margin-bottom: 8px;
+        color: #e6d5ba;
       }
 
       .enemy-list {
-        margin-top: 8px;
-        padding-left: 15px;
-        margin-bottom: 15px;
+        margin: 12px 0;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .enemy-item {
-        color: #ccc;
-        margin: 3px 0;
-        font-size: 12px;
+        color: #bdb088;
+        margin: 6px 0;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
+
+      .enemy-item::before {
+        content: '•';
+        color: #ffd700;
+        margin-right: 8px;
+        font-size: 18px;
       }
 
       .wave-progress {
-        margin: 10px 0;
-        font-size: 14px;
-        color: #4a9eff;
+        margin: 12px 0;
+        font-size: 16px;
+        color: #ffd700;
+        text-align: center;
       }
 
       .next-wave-button {
-        background: #4a9eff;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 5px;
+        background: linear-gradient(
+          to bottom,
+          #8b7355,
+          #6b563c
+        );
+        color: #fff;
+        border: 2px solid #483828;
+        padding: 10px 20px;
+        border-radius: 6px;
         cursor: pointer;
-        font-size: 14px;
-        transition: background-color 0.2s;
+        font-family: 'Cinzel', serif;
+        font-size: 16px;
         width: 100%;
+        transition: all 0.2s ease;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        box-shadow:
+          inset 0 1px rgba(255, 255, 255, 0.2),
+          inset 0 -1px rgba(0, 0, 0, 0.2);
       }
 
       .next-wave-button:hover {
-        background: #2c7cd6;
+        background: linear-gradient(
+          to bottom,
+          #9b8365,
+          #7b664c
+        );
+        border-color: #584838;
+        transform: translateY(-1px);
+        box-shadow:
+          inset 0 1px rgba(255, 255, 255, 0.2),
+          inset 0 -1px rgba(0, 0, 0, 0.2),
+          0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .next-wave-button:active {
+        transform: translateY(1px);
+        box-shadow:
+          inset 0 1px rgba(0, 0, 0, 0.2);
       }
 
       .next-wave-button:disabled {
-        background: #2c3e50;
+        background: linear-gradient(
+          to bottom,
+          #5b5b5b,
+          #3b3b3b
+        );
+        border-color: #2c2c2c;
         cursor: not-allowed;
+        color: #888;
       }
 
       .wave-complete {
-        color: #4ade80;
+        color: #90EE90;
         font-weight: bold;
         text-align: center;
-        margin: 10px 0;
+        margin: 12px 0;
+        font-size: 18px;
+        text-shadow: 0 0 10px rgba(144, 238, 144, 0.5);
+      }
+
+      @font-face {
+        font-family: 'Cinzel';
+        src: url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
       }
     `;
     document.head.appendChild(style);

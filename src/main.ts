@@ -3,6 +3,7 @@ import { GameEngine } from './engine/GameEngine';
 import { Config } from './Config';
 import { Player } from './entities/Player';
 import { BuildBar } from './ui/BuildBar';
+import { EnemyPrototypes } from './geometry/EnemyPrototypes';
 import level1 from '../assets/levels/level1.json';
 
 // Initialize game engine
@@ -28,6 +29,30 @@ player.setPosition(
 const buildBar = new BuildBar();
 engine.getInteractionManager().addInteractable(buildBar);
 
+// Add enemy prototypes for visualization
+const prototypes = [
+  EnemyPrototypes.createCrystalline(),
+  EnemyPrototypes.createTechno(),
+  EnemyPrototypes.createSpiky(),
+  EnemyPrototypes.createAlien(),
+  EnemyPrototypes.createKnight(),
+  EnemyPrototypes.createDragon(),
+  EnemyPrototypes.createWizard(),
+  EnemyPrototypes.createGolem(),
+  EnemyPrototypes.createSpecter(),
+  EnemyPrototypes.createConstructor(),
+  EnemyPrototypes.createSlimePurple(),
+  EnemyPrototypes.createSlimeGreen(),
+];
+
+// Position prototypes in a row
+prototypes.forEach((prototype, index) => {
+  const row = Math.floor(index / 5);
+  const col = index % 5;
+  prototype.position.set(col * 3, 1, -4 - row * 3); // Arrange in two rows
+  engine.getScene().add(prototype);
+});
+
 // Track last time for delta time calculation
 let lastTime = performance.now();
 
@@ -36,6 +61,13 @@ function animate() {
   const currentTime = performance.now();
   const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
   lastTime = currentTime;
+
+  // Update slime animations
+  prototypes.forEach((prototype) => {
+    if ((prototype as any).update) {
+      (prototype as any).update(deltaTime);
+    }
+  });
 
   requestAnimationFrame(animate);
   engine.update(deltaTime);
