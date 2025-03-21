@@ -1,118 +1,146 @@
 # Entities
 
-Entities are the core game objects in the tower defense game. They are managed by the `EntityManager` and can be updated each frame.
+This directory contains the core game objects in the tower defense game. Each entity is a self-contained unit that can be updated each frame and interacts with the game world through the Three.js scene graph.
 
-## Entity Types
-
-```
-Entity
-├── Player
-└── Tower (coming soon)
-```
-
-## Entity Base Class
-
-The `Entity` base class provides:
-
-- A Three.js Object3D for positioning and hierarchy
-- Update method for frame-by-frame updates
-- Disposal method for cleanup
-
-## Interactable Interface
-
-Some entities implement the `Interactable` interface:
-
-- Player (movement and control)
-- Tower (selection and upgrades)
-
-## Component Diagram
-
-```
-│ Entity      │
-├─────────────┤
-│ Object3D    │
-│ Interactable│
-└─────────────┘
-```
-
-## Entity Architecture
+## Entity Hierarchy
 
 ```ascii
-           ┌───────────────┐
-           │    Entity     │
-           └───────┬───────┘
-                   │
-        ┌──────────┴──────────┐
-        ▼                     ▼
-   ┌─────────┐         ┌──────────┐
-   │ Player  │         │  Light   │
-   └─────────┘         └──────────┘
-        │
-   ┌─────────┐
-   │ Drone   │
-   └─────────┘
+                    Entity (abstract)
+                         │
+         ┌──────────────┼──────────────────┐
+         ▼              ▼                  ▼
+      Player         Enemy (abstract)    Light
+         │              │
+         │         ┌────┴────┐
+         │         ▼         ▼
+      Drone    SlimeEnemy  BossCube
 ```
 
-## Entity Components
+## Core Components
 
-Each entity is composed of:
+### 1. Base Entity System (`Entity.ts`)
+
+- Abstract base class for all game objects
+- Core features:
+  - Three.js Object3D management
+  - Position and rotation control
+  - Resource disposal (geometries, materials)
+  - Abstract update method
+
+### 2. Player System (`Player.ts`)
+
+- Player-controlled drone
+- Features:
+  - Complex movement physics
+  - Height-based terrain following
+  - Rotor animation system
+  - Debug visualization tools
+  - Camera target integration
+
+### 3. Enemy System (`Enemy.ts`, `/enemies/*`)
+
+- Base enemy class and specific implementations
+- Features:
+  - Pathfinding on terrain grid
+  - Health and damage system
+  - Custom geometries and animations
+  - Variants:
+    - SlimeEnemy: Basic enemy with squash/stretch animation
+    - BossCube: Larger, more powerful enemy
+
+### 4. Light System (`Light.ts`)
+
+- Environmental lighting management
+- Features:
+  - Ambient light control
+  - Directional shadows
+  - Dynamic intensity adjustment
+
+## Interaction System
+
+Entities can implement the `Interactable` interface:
+
+```typescript
+interface Interactable {
+  handleInput(input: InputState, deltaTime: number): void;
+  isSelected?: boolean;
+  priority: InteractionPriority;
+}
+```
+
+Priority levels:
+
+- MACRO_UI (3): Global UI elements
+- TOWER_UI (2): Tower placement/management
+- ENEMY_UI (1): Enemy interaction
+- WORLD (0): Terrain/world interaction
+
+## Entity Component Structure
 
 ```ascii
-Entity
-┌────────────────────────┐
-│                        │
-│  ┌──────────────┐      │
-│  │  Three.js    │      │
-│  │  Object3D    │      │
-│  └──────────────┘      │
-│                        │
-│  ┌──────────────┐      │
-│  │  Update      │      │
-│  │  Logic       │      │
-│  └──────────────┘      │
-│                        │
-│  ┌──────────────┐      │
-│  │  Debug       │      │
-│  │  Visuals     │      │
-│  └──────────────┘      │
-│                        │
-└────────────────────────┘
+┌────────────── Entity ──────────────┐
+│                                    │
+│  ┌─────────────┐   ┌────────────┐  │
+│  │  Three.js   │   │ Game Logic │  │
+│  │  Components │   │            │  │
+│  └─────────────┘   └────────────┘  │
+│                                    │
+│  ┌─────────────┐   ┌────────────┐  │
+│  │ Interaction │   │   Debug    │  │
+│  │   System    │   │  Helpers   │  │
+│  └─────────────┘   └────────────┘  │
+│                                    │
+└────────────────────────────────────┘
 ```
 
-## Entity Types
+## Best Practices
 
-1. `Player` (Drone)
+1. Entity Creation
 
-   - Complex movement system with acceleration and tilt
-   - Visual components (body, rotors)
-   - Debug visualization for movement paths
-   - Configurable speeds and behaviors
+   - Always extend the base `Entity` class
+   - Implement `dispose()` for proper cleanup
+   - Use abstract methods for required functionality
+   - Initialize Three.js components in constructor
 
-2. `Light`
-   - Ambient and directional lighting
-   - Configurable intensities and colors
-   - Shadows and environmental effects
+2. Updates and Input
 
-## Interactable Interface
+   - Keep update logic concise and focused
+   - Use the priority system for input handling
+   - Implement debug visualizations where helpful
+   - Cache frequently accessed components
 
-Some entities implement the `Interactable` interface:
+3. Resource Management
+   - Properly dispose of Three.js resources
+   - Use shared geometries when possible
+   - Clean up event listeners and intervals
+   - Remove from scene graph when disposed
 
-```ascii
-┌───────────────┐
-│ Interactable  │
-└───────┬───────┘
-        │
-    handleInput()
-        │
-        ▼
-┌───────────────┐
-│    Entity     │
-└───────────────┘
+## Debug Features
+
+Each entity type supports various debug features:
+
+- Player: Movement vectors, height rays, collision bounds
+- Enemies: Path visualization, health indicators
+- Lights: Helper objects for light direction/position
+
+## Example Usage
+
+```typescript
+// Creating a new enemy
+const enemy = new SlimeEnemy(
+  terrainGrid,
+  { x: 0, z: 0 }, // spawn point
+  2.0, // speed
+  100, // health
+  1.0 // height
+);
+
+// Adding to the game
+entityManager.addEntity('enemy1', enemy);
+
+// Updating
+enemy.update(deltaTime);
+
+// Cleanup
+enemy.dispose();
 ```
-
-This allows them to:
-
-- Receive input events
-- Respond to user controls
-- Integrate with the debug system
-- Be managed by `GameControls`

@@ -1,78 +1,121 @@
 # Game Engine Architecture
 
-The engine folder contains the core game loop and state management system. It's built around a central `GameEngine` class that orchestrates all the components.
+The engine directory contains the core systems that power the tower defense game. It's built around a central `GameEngine` class that orchestrates all components through a component-based architecture.
 
 ## Core Components
 
 ```ascii
-                  ┌─────────────────┐
-                  │   GameEngine    │
-                  └────────┬────────┘
-         ┌─────────────────┼───────────────┐
-         ▼                 ▼               ▼
-    ┌──────────┐    ┌─────────────┐  ┌──────────┐
-    │  Scene   │    │EntityManager│  │GameCamera│
-    └──────────┘    └─────────────┘  └──────────┘
-         │                 │               │
-         │                 ▼               │
-         │          ┌──────────┐           │
-         └────────▶ │ Entities │ ◀─────────┘
-                    └──────────┘
-                         ▲
-                         │
-                    ┌──────────┐
-                    │InputState│
-                    └──────────┘
+                     ┌─────────────────┐
+                     │   GameEngine    │
+                     └───────┬─────────┘
+         ┌──────────────────┼──────────────────┐
+         ▼                  ▼                  ▼
+   ┌──────────┐     ┌─────────────┐    ┌──────────────┐
+   │  Scene   │     │EntityManager│    │GameCamera    │
+   └────┬─────┘     └──────┬──────┘    └─────┬────────┘
+        │                  │                 │
+        │            ┌─────▼─────┐           │
+        └──────────▶ │ Entities  │ ◀─────────┘
+                     └─────┬─────┘
+                           │
+                    ┌──────▼──────┐
+                    │ Interaction │
+                    │   System    │
+                    └─────────────┘
 ```
 
-## State Management
+## Component Overview
 
-The engine uses a component-based architecture where:
+### 1. GameEngine (`GameEngine.ts`)
 
-1. `GameEngine`: Central coordinator
+- Central coordinator for all game systems
+- Manages the main game loop (update/render cycle)
+- Handles window/context management and resizing
+- Coordinates level loading and wave systems
 
-   - Manages the game loop (update/render)
-   - Holds references to all major systems
-   - Handles window/context management
+### 2. Entity System (`EntityManager.ts`)
 
-2. `EntityManager`: Entity lifecycle
+- Manages entity lifecycle (creation, updates, destruction)
+- Tracks all game entities in the scene
+- Integrates with debug system for entity monitoring
+- Provides centralized entity querying and management
 
-   - Tracks all game entities
-   - Handles entity creation/destruction
-   - Updates entities each frame
+### 3. Input System (`InputState.ts`, `Interactable.ts`, `InteractionManager.ts`)
 
-3. `InputState`: Input handling
+- Hierarchical input handling with priority levels:
+  - MACRO_UI (3): High-level game UI
+  - TOWER_UI (2): Tower placement and management
+  - ENEMY_UI (1): Enemy interaction
+  - WORLD (0): World/terrain interaction
+- Tracks keyboard and mouse state
+- Converts screen coordinates to world space
+- Raycasting for 3D object interaction
 
-   - Tracks keyboard/mouse state
-   - Converts screen coordinates to world space
-   - Provides clean interface for input queries
+### 4. Camera System (`GameCamera.ts`)
 
-4. `GameCamera`: View management
-   - Controls player view
-   - Handles orbital controls
-   - Manages perspective and movement
+- Controls player view and perspective
+- Handles orbital camera controls
+- Supports different view modes (top-down, orbital)
+- Manages camera boundaries and constraints
 
-## Control Flow
+## Interaction Flow
 
 ```ascii
-Game Loop
-┌─────────────────────────────────┐
-│                                 │
-│  ┌─────────┐    ┌────────────┐  │
-└─▶│ Update  │───▶│  Render    │──┘
-   └─────────┘    └────────────┘
-        │              │
-        ▼              ▼
-   Entities       Three.js
-   Physics        Scene
-   Input          Camera
+Input Event
+     │
+     ▼
+┌──────────┐
+│InputState│──────┐
+└──────────┘      │
+                  ▼
+          ┌───────────────┐
+          │Interaction    │
+          │Manager        │
+          └───────┬───────┘
+                  │
+        ┌─────────▼─────────┐
+        │Priority-based     │
+        │Input Distribution │
+        └─────────┬─────────┘
+                  │
+        ┌─────────▼─────────┐
+        │Entity/UI Response │
+        └─────────┬─────────┘
+                  │
+                  ▼
+            Game Update
 ```
 
-## Debug System
+## Usage Example
 
-The engine includes a comprehensive debug system that can:
+```typescript
+// Initialize the game engine
+const engine = new GameEngine(canvas);
 
-- Toggle debug overlays
-- Monitor performance
-- Visualize entity states
-- Modify runtime values
+// Add an interactable entity
+const entity: Interactable = {
+  handleInput(input: InputState, deltaTime: number) {
+    // Handle input for this entity
+  },
+  priority: InteractionPriority.WORLD,
+};
+engine.getInteractionManager().addInteractable(entity);
+
+// Start the game loop
+engine.update(deltaTime);
+```
+
+## Debug Features
+
+- Comprehensive entity state monitoring
+- Visual debugging overlays
+- Performance monitoring
+- Runtime value modification
+- Terrain grid visualization
+
+## Best Practices
+
+- Always dispose of entities and resources when no longer needed
+- Use the priority system for proper input handling
+- Leverage the debug system during development
+- Follow the component-based architecture for new features
