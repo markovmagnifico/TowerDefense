@@ -10,6 +10,7 @@ import { DebugSystem } from '../debug/DebugSystem';
 import { Debug } from '../debug/Debug';
 import { WaveManager } from '../level/WaveManager';
 import { WaveUI } from '../ui/WaveUI';
+import { BuildSystem } from './BuildSystem';
 
 export class GameEngine {
   private scene: THREE.Scene;
@@ -22,6 +23,7 @@ export class GameEngine {
   private debugSystem: DebugSystem;
   private waveManager: WaveManager;
   private waveUI: WaveUI;
+  private buildSystem: BuildSystem;
 
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new THREE.Scene();
@@ -56,6 +58,14 @@ export class GameEngine {
     // Create WaveManager with null Level - will be properly initialized in loadLevel
     this.waveManager = new WaveManager(this.waveUI, this.entityManager, null);
 
+    // Initialize BuildSystem
+    this.buildSystem = new BuildSystem(
+      this.scene,
+      this.currentLevel?.getTerrainGrid() ?? null,
+      this.entityManager
+    );
+    this.interactionManager.addInteractable(this.buildSystem, InteractionPriority.BUILD_MODE);
+
     window.addEventListener('resize', this.handleResize.bind(this));
   }
 
@@ -66,6 +76,9 @@ export class GameEngine {
 
     this.currentLevel = new Level(this.scene, levelData, this.entityManager);
     this.currentLevel.initialize();
+
+    // Update BuildSystem with new terrain grid
+    this.buildSystem.setTerrainGrid(this.currentLevel.getTerrainGrid());
 
     this.debugSystem.createTerrainDebug(this.currentLevel.getTerrainGrid());
 
@@ -143,6 +156,10 @@ export class GameEngine {
 
   getDebugSystem(): DebugSystem {
     return this.debugSystem;
+  }
+
+  getBuildSystem(): BuildSystem {
+    return this.buildSystem;
   }
 
   dispose(): void {

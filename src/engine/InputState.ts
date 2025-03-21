@@ -176,7 +176,7 @@ export class InputState {
     return this.worldPosition?.clone() ?? null;
   }
 
-  setSelection(interactable: Interactable | null) {
+  setSelection(interactable: Interactable | null): void {
     // Clear previous selection
     if (this.selectedInteractable && this.selectedInteractable !== interactable) {
       this.selectedInteractable.isSelected = false;
@@ -189,11 +189,11 @@ export class InputState {
     }
   }
 
-  clearSelection() {
+  clearSelection(): void {
     this.setSelection(null);
   }
 
-  getSelectedInteractable(): Interactable | null {
+  getSelection(): Interactable | null {
     return this.selectedInteractable;
   }
 }

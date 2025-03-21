@@ -6,13 +6,13 @@ import { BuildBar } from './ui/BuildBar';
 import { Prototypes } from './geometry/Prototypes';
 import level1 from '../assets/levels/level1.json';
 
-// Initialize game engine
+// Create game engine
 const canvas = document.createElement('canvas');
 document.body.appendChild(canvas);
 const engine = new GameEngine(canvas);
 
-// Load initial level
-engine.loadLevel(level1);
+// Load level first
+await engine.loadLevel(level1);
 
 // Initialize player with height callback
 const terrainGrid = engine.getLevel().getTerrainGrid();
@@ -25,8 +25,8 @@ player.setPosition(
   engine.getLevel().getBoardCenter().z
 );
 
-// Initialize UI
-const buildBar = new BuildBar();
+// Initialize UI after level is loaded
+const buildBar = new BuildBar(engine.getBuildSystem());
 engine.getInteractionManager().addInteractable(buildBar);
 
 // Add enemy prototypes for visualization
@@ -85,5 +85,4 @@ const debug = engine.getDebugSystem();
 debug.addControl('Player', player, 'movementSpeed', 1, 10);
 debug.addControl('Player', player, 'rotorSpeed', 0.1, 15);
 player.setDebugEnabled(true);
-
 animate();

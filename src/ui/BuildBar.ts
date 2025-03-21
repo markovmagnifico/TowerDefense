@@ -1,6 +1,11 @@
 import { InputState } from '../engine/InputState';
 import { InteractionPriority } from '../engine/InteractionManager';
 import { HTMLUIElement } from './UITypes';
+import { RangerTower } from '../entities/towers/RangerTower';
+import { BuildSystem } from '../engine/BuildSystem';
+import { Tower } from '../entities/towers/Tower';
+
+type TowerConstructor = new (...args: any[]) => Tower;
 
 export class BuildBar extends HTMLUIElement {
   private slots: HTMLElement[] = [];
@@ -8,7 +13,19 @@ export class BuildBar extends HTMLUIElement {
   private readonly numSlots = 8;
   priority = InteractionPriority.MACRO_UI;
 
-  constructor() {
+  // Define which tower goes in which slot
+  private towerTypes: (TowerConstructor | null)[] = [
+    RangerTower, // Slot 0
+    null, // Slot 1
+    null, // Slot 2
+    null, // Slot 3
+    null, // Slot 4
+    null, // Slot 5
+    null, // Slot 6
+    null, // Slot 7
+  ];
+
+  constructor(private buildSystem: BuildSystem) {
     super('build-bar', '', 'build-bar');
     this.setupHTML();
     this.setupStyles();
@@ -139,7 +156,7 @@ export class BuildBar extends HTMLUIElement {
     document.head.appendChild(style);
   }
 
-  handleInput(input: InputState, _deltaTime: number): void {
+  handleInput(input: InputState): void {
     if (input.isMouseButtonPressed(0)) {
       const mousePos = input.getMousePosition();
       const { x, y } = this.getScreenCoordinates(mousePos.x, mousePos.y);
@@ -147,18 +164,36 @@ export class BuildBar extends HTMLUIElement {
       if (this.containsPoint(x, y)) {
         const slot = this.getSlotAtPoint(x, y);
         if (slot !== null) {
-          this.activateSlot(slot);
-          input.setSelection(this);
+          this.toggleSlot(slot);
         }
-      } else if (this.isSelected) {
-        this.clearActiveSlot();
-        input.clearSelection();
       }
     }
   }
 
   handleClick(): boolean {
-    return this.isSelected;
+    return false; // We don't need to consume clicks
+  }
+
+  private toggleSlot(index: number): void {
+    if (this.activeSlot === index) {
+      // Deactivate current slot
+      this.slots[index].classList.remove('active');
+      this.activeSlot = null;
+      this.buildSystem.deactivate();
+    } else {
+      // Deactivate previous slot if any
+      if (this.activeSlot !== null) {
+        this.slots[this.activeSlot].classList.remove('active');
+      }
+
+      // Activate new slot if it has a tower type
+      const TowerClass = this.towerTypes[index];
+      if (TowerClass) {
+        this.slots[index].classList.add('active');
+        this.activeSlot = index;
+        this.buildSystem.activate(TowerClass);
+      }
+    }
   }
 
   private getSlotAtPoint(x: number, y: number): number | null {
@@ -169,26 +204,6 @@ export class BuildBar extends HTMLUIElement {
       }
     }
     return null;
-  }
-
-  private activateSlot(index: number): void {
-    if (this.activeSlot !== null) {
-      this.slots[this.activeSlot].classList.remove('active');
-    }
-
-    if (this.activeSlot !== index) {
-      this.slots[index].classList.add('active');
-      this.activeSlot = index;
-    } else {
-      this.activeSlot = null;
-    }
-  }
-
-  private clearActiveSlot(): void {
-    if (this.activeSlot !== null) {
-      this.slots[this.activeSlot].classList.remove('active');
-      this.activeSlot = null;
-    }
   }
 
   dispose(): void {

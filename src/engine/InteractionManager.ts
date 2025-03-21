@@ -3,7 +3,8 @@ import { InputState } from './InputState';
 import { Interactable } from './Interactable';
 
 export enum InteractionPriority {
-  MACRO_UI = 3,
+  MACRO_UI = 4,
+  BUILD_MODE = 3,
   TOWER_UI = 2,
   ENEMY_UI = 1,
   WORLD = 0,
@@ -44,6 +45,10 @@ export class InteractionManager {
     // Handle input for each interactable in priority order
     for (const interactable of sortedInteractables) {
       interactable.handleInput(input, deltaTime);
+      // If the interactable is selected, stop processing further interactions
+      if (input.getSelection() === interactable) {
+        break;
+      }
     }
   }
 
