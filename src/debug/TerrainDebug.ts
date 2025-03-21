@@ -13,6 +13,7 @@ export class TerrainDebug extends DebugComponent {
   private hoveredTile: { x: number; z: number } | null = null;
   private arrowGeometry: THREE.BufferGeometry = new THREE.BufferGeometry();
   private arrowMaterial: THREE.MeshBasicMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  private hoverHighlight: THREE.Mesh | null = null;
 
   constructor(
     scene: THREE.Scene,
@@ -24,6 +25,7 @@ export class TerrainDebug extends DebugComponent {
     this.createWireframe();
     this.createGridLabels();
     this.createDirectionIndicators();
+    this.createHoverHighlight();
   }
 
   private createArrowGeometry(): void {
@@ -220,9 +222,42 @@ export class TerrainDebug extends DebugComponent {
     }
   }
 
+  private createHoverHighlight(): void {
+    // Create a plane geometry for the tile size
+    const geometry = new THREE.PlaneGeometry(Config.TILE_SIZE, Config.TILE_SIZE);
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x00ff00,
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.DoubleSide,
+      depthWrite: false, // Prevent z-fighting with terrain
+    });
+
+    this.hoverHighlight = new THREE.Mesh(geometry, material);
+    this.hoverHighlight.rotation.x = -Math.PI / 2; // Lay flat on XZ plane
+    this.hoverHighlight.visible = false;
+    this.scene.add(this.hoverHighlight);
+  }
+
+  private updateHoverHighlight(): void {
+    if (!this.hoverHighlight || !this.hoveredTile) {
+      if (this.hoverHighlight) {
+        this.hoverHighlight.visible = false;
+      }
+      return;
+    }
+
+    const worldPos = this.terrainGrid.gridToWorld(this.hoveredTile.x, this.hoveredTile.z);
+    this.hoverHighlight.position.set(worldPos.x, worldPos.y + 0.1, worldPos.z); // Slightly above terrain
+    this.hoverHighlight.visible = this.enabled;
+  }
+
   protected onToggle(enabled: boolean): void {
     if (this.wireframeMesh) {
       this.wireframeMesh.visible = enabled;
+    }
+    if (this.hoverHighlight) {
+      this.hoverHighlight.visible = enabled && this.hoveredTile !== null;
     }
     if (!enabled) {
       this.hideAllLabels();
@@ -284,13 +319,14 @@ export class TerrainDebug extends DebugComponent {
       }
     }
 
-    // Update visible label positions
+    // Update visible label positions and hover highlight
     if (this.hoveredTile) {
       const index =
         this.hoveredTile.z * this.terrainGrid.getDimensions().width + this.hoveredTile.x;
       const worldPos = this.terrainGrid.gridToWorld(this.hoveredTile.x, this.hoveredTile.z);
       this.gridLabels[index].position.set(worldPos.x, worldPos.y + 0.5, worldPos.z);
     }
+    this.updateHoverHighlight();
   }
 
   private showLabel(x: number, z: number): void {
@@ -319,6 +355,12 @@ export class TerrainDebug extends DebugComponent {
       this.wireframeMesh.geometry.dispose();
       (this.wireframeMesh.material as THREE.Material).dispose();
       this.scene.remove(this.wireframeMesh);
+    }
+
+    if (this.hoverHighlight) {
+      this.hoverHighlight.geometry.dispose();
+      (this.hoverHighlight.material as THREE.Material).dispose();
+      this.scene.remove(this.hoverHighlight);
     }
 
     this.gridLabels.forEach((label) => {
