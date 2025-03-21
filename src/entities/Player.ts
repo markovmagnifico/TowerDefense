@@ -389,9 +389,9 @@ export class Player extends Entity implements Interactable {
   private isValidPosition(point: THREE.Vector3): boolean {
     return (
       point.x >= 0 &&
-      point.x <= this.dimensions.width &&
+      point.x <= this.dimensions.width * Config.TILE_SIZE &&
       point.z >= 0 &&
-      point.z <= this.dimensions.height
+      point.z <= this.dimensions.height * Config.TILE_SIZE
     );
   }
 }
