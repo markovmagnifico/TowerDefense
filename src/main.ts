@@ -3,7 +3,7 @@ import { GameEngine } from './engine/GameEngine';
 import { Config } from './Config';
 import { Player } from './entities/Player';
 import { BuildBar } from './ui/BuildBar';
-import { EnemyPrototypes } from './geometry/EnemyPrototypes';
+import { Prototypes } from './geometry/Prototypes';
 import level1 from '../assets/levels/level1.json';
 
 // Initialize game engine
@@ -31,25 +31,32 @@ engine.getInteractionManager().addInteractable(buildBar);
 
 // Add enemy prototypes for visualization
 const prototypes = [
-  EnemyPrototypes.createCrystalline(),
-  EnemyPrototypes.createTechno(),
-  EnemyPrototypes.createSpiky(),
-  EnemyPrototypes.createAlien(),
-  EnemyPrototypes.createKnight(),
-  EnemyPrototypes.createDragon(),
-  EnemyPrototypes.createWizard(),
-  EnemyPrototypes.createGolem(),
-  EnemyPrototypes.createSpecter(),
-  EnemyPrototypes.createConstructor(),
-  EnemyPrototypes.createSlimePurple(),
-  EnemyPrototypes.createSlimeGreen(),
+  Prototypes.createArrowTower(),
+  Prototypes.createMageTower(),
+  Prototypes.createCannonTower(),
+  Prototypes.createTeslaTower(),
+  Prototypes.createWatchtowerArrow(),
+  Prototypes.createRangerArrow(),
+  Prototypes.createSpireArrow(),
+  Prototypes.createCrystalline(),
+  Prototypes.createTechno(),
+  Prototypes.createSpiky(),
+  Prototypes.createAlien(),
+  Prototypes.createKnight(),
+  Prototypes.createDragon(),
+  Prototypes.createWizard(),
+  Prototypes.createGolem(),
+  Prototypes.createSpecter(),
+  Prototypes.createConstructor(),
+  Prototypes.createSlimePurple(),
+  Prototypes.createSlimeGreen(),
 ];
 
 // Position prototypes in a row
 prototypes.forEach((prototype, index) => {
   const row = Math.floor(index / 5);
   const col = index % 5;
-  prototype.position.set(col * 3, 1, -4 - row * 3); // Arrange in two rows
+  prototype.position.set(col * 3, 1, 30 - row * 3); // Arrange in two rows
   engine.getScene().add(prototype);
 });
 

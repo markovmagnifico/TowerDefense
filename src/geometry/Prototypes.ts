@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export class EnemyPrototypes {
+export class Prototypes {
   private static createLabel(text: string): THREE.Sprite {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d')!;
@@ -20,6 +20,409 @@ export class EnemyPrototypes {
 
     return sprite;
   }
+
+  // ==================== TOWER PROTOTYPES ====================
+
+  static createArrowTower(): THREE.Group {
+    const group = new THREE.Group();
+    group.add(this.createLabel('Arrow Tower'));
+
+    // Base cylinder
+    const baseGeo = new THREE.CylinderGeometry(0.4, 0.5, 0.8, 8);
+    const baseMat = new THREE.MeshPhongMaterial({
+      color: 0x808080,
+      flatShading: true,
+    });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    group.add(base);
+
+    // Platform (octagonal)
+    const platformGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 8);
+    const platformMat = new THREE.MeshPhongMaterial({
+      color: 0x505050,
+      flatShading: true,
+    });
+    const platform = new THREE.Mesh(platformGeo, platformMat);
+    platform.position.y = 0.45;
+    group.add(platform);
+
+    // Crossbow
+    const bowGeo = new THREE.TorusGeometry(0.3, 0.05, 8, 8, Math.PI);
+    const bowMat = new THREE.MeshPhongMaterial({
+      color: 0x8b4513,
+      flatShading: true,
+    });
+    const bow = new THREE.Mesh(bowGeo, bowMat);
+    bow.position.y = 0.6;
+    bow.rotation.x = Math.PI / 2;
+    group.add(bow);
+
+    return group;
+  }
+
+  static createMageTower(): THREE.Group {
+    const group = new THREE.Group();
+    group.add(this.createLabel('Mage Tower'));
+
+    // Base cylinder
+    const baseGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.2, 8);
+    const baseMat = new THREE.MeshPhongMaterial({
+      color: 0x4b0082,
+      flatShading: true,
+    });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    group.add(base);
+
+    // Cone top
+    const coneGeo = new THREE.ConeGeometry(0.5, 0.6, 8);
+    const coneMat = new THREE.MeshPhongMaterial({
+      color: 0x800080,
+      flatShading: true,
+    });
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.y = 0.9;
+    group.add(cone);
+
+    // Floating crystal
+    const crystalGeo = new THREE.OctahedronGeometry(0.2);
+    const crystalMat = new THREE.MeshPhongMaterial({
+      color: 0xff00ff,
+      emissive: 0xff00ff,
+      emissiveIntensity: 0.5,
+      shininess: 100,
+    });
+    const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+    crystal.position.y = 1.5;
+    group.add(crystal);
+
+    return group;
+  }
+
+  static createCannonTower(): THREE.Group {
+    const group = new THREE.Group();
+    group.add(this.createLabel('Cannon Tower'));
+
+    // Base cylinder
+    const baseGeo = new THREE.CylinderGeometry(0.4, 0.5, 0.8, 8);
+    const baseMat = new THREE.MeshPhongMaterial({
+      color: 0x696969,
+      flatShading: true,
+    });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    group.add(base);
+
+    // Platform (box)
+    const platformGeo = new THREE.BoxGeometry(1, 0.2, 1);
+    const platformMat = new THREE.MeshPhongMaterial({
+      color: 0x505050,
+      flatShading: true,
+    });
+    const platform = new THREE.Mesh(platformGeo, platformMat);
+    platform.position.y = 0.5;
+    group.add(platform);
+
+    // Cannon barrel
+    const barrelGeo = new THREE.CylinderGeometry(0.15, 0.2, 0.6, 8);
+    const barrelMat = new THREE.MeshPhongMaterial({
+      color: 0x000000,
+      flatShading: true,
+    });
+    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
+    barrel.position.y = 0.7;
+    barrel.rotation.x = -Math.PI / 4;
+    group.add(barrel);
+
+    return group;
+  }
+
+  static createTeslaTower(): THREE.Group {
+    const group = new THREE.Group();
+    group.add(this.createLabel('Tesla Tower'));
+
+    // Thin base cylinder
+    const baseGeo = new THREE.CylinderGeometry(0.2, 0.3, 1.5, 8);
+    const baseMat = new THREE.MeshPhongMaterial({
+      color: 0x1e90ff,
+      flatShading: true,
+    });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    group.add(base);
+
+    // Energy sphere
+    const sphereGeo = new THREE.SphereGeometry(0.4, 8, 8);
+    const sphereMat = new THREE.MeshPhongMaterial({
+      color: 0x00ffff,
+      emissive: 0x00ffff,
+      emissiveIntensity: 0.5,
+      wireframe: true,
+    });
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    sphere.position.y = 0.9;
+    group.add(sphere);
+
+    // Energy coils (rings)
+    const coilGeo = new THREE.TorusGeometry(0.3, 0.05, 8, 16);
+    const coilMat = new THREE.MeshPhongMaterial({
+      color: 0x4169e1,
+      emissive: 0x4169e1,
+      emissiveIntensity: 0.3,
+    });
+
+    const coil1 = new THREE.Mesh(coilGeo, coilMat);
+    const coil2 = new THREE.Mesh(coilGeo, coilMat);
+    coil1.position.y = 0.9;
+    coil2.position.y = 0.9;
+    coil1.rotation.x = Math.PI / 2;
+    coil2.rotation.z = Math.PI / 2;
+    group.add(coil1, coil2);
+
+    return group;
+  }
+
+  static createWatchtowerArrow(): THREE.Group {
+    const group = new THREE.Group();
+    group.add(this.createLabel('Watchtower Arrow'));
+
+    // Square stone base
+    const baseGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
+    const stoneMat = new THREE.MeshPhongMaterial({
+      color: 0x808080,
+      flatShading: true,
+    });
+    const base = new THREE.Mesh(baseGeo, stoneMat);
+    group.add(base);
+
+    // Arrow slits on each side
+    const slitGeo = new THREE.BoxGeometry(0.1, 0.3, 0.05);
+    const slitMat = new THREE.MeshPhongMaterial({
+      color: 0x000000,
+    });
+
+    // Add slits to each side
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 2) {
+      const slit = new THREE.Mesh(slitGeo, slitMat);
+      slit.position.y = 0.2;
+      slit.position.x = Math.sin(angle) * 0.4;
+      slit.position.z = Math.cos(angle) * 0.4;
+      slit.rotation.y = angle;
+      group.add(slit);
+    }
+
+    // Platform top with corner posts
+    const platformGeo = new THREE.BoxGeometry(1, 0.1, 1);
+    const woodMat = new THREE.MeshPhongMaterial({
+      color: 0x8b4513,
+      flatShading: true,
+    });
+    const platform = new THREE.Mesh(platformGeo, woodMat);
+    platform.position.y = 0.65;
+    group.add(platform);
+
+    // Corner posts
+    const postGeo = new THREE.BoxGeometry(0.1, 0.3, 0.1);
+    for (let x of [-0.45, 0.45]) {
+      for (let z of [-0.45, 0.45]) {
+        const post = new THREE.Mesh(postGeo, woodMat);
+        post.position.set(x, 0.8, z);
+        group.add(post);
+      }
+    }
+
+    // Roof
+    const roofGeo = new THREE.BoxGeometry(1.2, 0.05, 1.2);
+    const roofMat = new THREE.MeshPhongMaterial({
+      color: 0x4a4a4a,
+      flatShading: true,
+    });
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.y = 0.95;
+    group.add(roof);
+
+    // Crossbow
+    const bowGeo = new THREE.BoxGeometry(0.4, 0.05, 0.05);
+    const bowMat = new THREE.MeshPhongMaterial({
+      color: 0x8b4513,
+      flatShading: true,
+    });
+    const bow = new THREE.Mesh(bowGeo, bowMat);
+    bow.position.y = 0.75;
+    bow.rotation.y = Math.PI / 4;
+    group.add(bow);
+
+    return group;
+  }
+
+  static createRangerArrow(): THREE.Group {
+    const group = new THREE.Group();
+    group.add(this.createLabel('Ranger Arrow'));
+
+    const woodMat = new THREE.MeshPhongMaterial({
+      color: 0x8b4513,
+      flatShading: true,
+    });
+
+    // Main support posts (4 corners, slightly angled outward)
+    const postGeo = new THREE.CylinderGeometry(0.06, 0.08, 1.4, 6);
+    const angleOffset = 0.1;
+    for (let x of [-0.3, 0.3]) {
+      for (let z of [-0.3, 0.3]) {
+        const post = new THREE.Mesh(postGeo, woodMat);
+        post.position.set(x, 0.7, z);
+        // Angle posts slightly outward
+        post.rotation.x = (z > 0 ? -1 : 1) * angleOffset;
+        post.rotation.z = (x > 0 ? 1 : -1) * angleOffset;
+        group.add(post);
+      }
+    }
+
+    // Cross braces
+    const braceGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.85, 6);
+    const braces: THREE.Mesh[] = [];
+
+    // Add diagonal braces on each side
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 2) {
+      const brace = new THREE.Mesh(braceGeo, woodMat);
+      brace.position.y = 0.4;
+      brace.rotation.z = Math.PI / 4;
+      brace.rotation.y = angle;
+      brace.position.x = Math.sin(angle) * 0.3;
+      brace.position.z = Math.cos(angle) * 0.3;
+      group.add(brace);
+      braces.push(brace);
+    }
+
+    // Platform
+    const platformGeo = new THREE.BoxGeometry(0.9, 0.1, 0.9);
+    const platform = new THREE.Mesh(platformGeo, woodMat);
+    platform.position.y = 1;
+    group.add(platform);
+
+    // Railing
+    const railingGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 4);
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+      const rail = new THREE.Mesh(railingGeo, woodMat);
+      rail.position.y = 1.15;
+      rail.position.x = Math.sin(angle) * 0.4;
+      rail.position.z = Math.cos(angle) * 0.4;
+      group.add(rail);
+    }
+
+    // Top railing connector
+    const topRailGeo = new THREE.TorusGeometry(0.4, 0.02, 8, 16);
+    const topRail = new THREE.Mesh(topRailGeo, woodMat);
+    topRail.position.y = 1.3;
+    topRail.rotation.x = Math.PI / 2;
+    group.add(topRail);
+
+    // Handcrafted crossbow
+    const bowGroup = new THREE.Group();
+
+    // Bow arms
+    const bowArmGeo = new THREE.CylinderGeometry(0.02, 0.01, 0.4, 4);
+    const leftArm = new THREE.Mesh(bowArmGeo, woodMat);
+    const rightArm = new THREE.Mesh(bowArmGeo, woodMat);
+    leftArm.rotation.z = Math.PI / 4;
+    rightArm.rotation.z = -Math.PI / 4;
+    bowGroup.add(leftArm, rightArm);
+
+    // Bowstring
+    const stringGeo = new THREE.CylinderGeometry(0.005, 0.005, 0.5, 2);
+    const stringMat = new THREE.MeshPhongMaterial({
+      color: 0x463020,
+      flatShading: true,
+    });
+    const string = new THREE.Mesh(stringGeo, stringMat);
+    bowGroup.add(string);
+
+    bowGroup.position.y = 1.1;
+    bowGroup.rotation.y = Math.PI / 4;
+    group.add(bowGroup);
+
+    return group;
+  }
+
+  static createSpireArrow(): THREE.Group {
+    const group = new THREE.Group();
+    group.add(this.createLabel('Spire Arrow'));
+
+    // Materials
+    const stoneMat = new THREE.MeshPhongMaterial({
+      color: 0x909090,
+      flatShading: true,
+    });
+    const metalMat = new THREE.MeshPhongMaterial({
+      color: 0x606060,
+      flatShading: true,
+    });
+
+    // Flared base
+    const baseGeo = new THREE.CylinderGeometry(0.5, 0.7, 0.3, 8);
+    const base = new THREE.Mesh(baseGeo, stoneMat);
+    base.position.y = 0.15;
+    group.add(base);
+
+    // Tapered tower body
+    const bodyGeo = new THREE.CylinderGeometry(0.3, 0.5, 1.2, 8);
+    const body = new THREE.Mesh(bodyGeo, stoneMat);
+    body.position.y = 0.9;
+    group.add(body);
+
+    // Decorative rings
+    const ringGeo = new THREE.TorusGeometry(0.35, 0.05, 8, 8);
+    const positions = [0.4, 0.8, 1.2];
+    positions.forEach((y) => {
+      const ring = new THREE.Mesh(ringGeo, metalMat);
+      ring.position.y = y;
+      ring.rotation.x = Math.PI / 2;
+      group.add(ring);
+    });
+
+    // Support brackets for platform
+    const bracketGeo = new THREE.BoxGeometry(0.1, 0.3, 0.1);
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 2) {
+      const bracket = new THREE.Mesh(bracketGeo, metalMat);
+      bracket.position.y = 1.5;
+      bracket.position.x = Math.sin(angle) * 0.3;
+      bracket.position.z = Math.cos(angle) * 0.3;
+      bracket.rotation.x = Math.PI / 6;
+      bracket.rotation.y = angle;
+      group.add(bracket);
+    }
+
+    // Small platform
+    const platformGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 8);
+    const platform = new THREE.Mesh(platformGeo, metalMat);
+    platform.position.y = 1.6;
+    group.add(platform);
+
+    // Elevated crossbow mount
+    const mountGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.3, 6);
+    const mount = new THREE.Mesh(mountGeo, metalMat);
+    mount.position.y = 1.75;
+    group.add(mount);
+
+    // Lightweight crossbow
+    const bowGroup = new THREE.Group();
+
+    // Main bow structure
+    const bowGeo = new THREE.TorusGeometry(0.2, 0.02, 8, 8, Math.PI);
+    const bow = new THREE.Mesh(bowGeo, metalMat);
+    bow.rotation.x = Math.PI / 2;
+    bowGroup.add(bow);
+
+    // Center mechanism
+    const mechGeo = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const mech = new THREE.Mesh(mechGeo, metalMat);
+    bowGroup.add(mech);
+
+    bowGroup.position.y = 1.9;
+    bowGroup.rotation.y = Math.PI / 4;
+    group.add(bowGroup);
+
+    return group;
+  }
+
+  // ==================== ENEMY PROTOTYPES ====================
 
   static createCrystalline(): THREE.Group {
     const group = new THREE.Group();
