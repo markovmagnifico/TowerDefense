@@ -43,15 +43,17 @@ export class Player extends Entity implements Interactable {
     this.object3D.position.y = Config.DRONE.MOVEMENT.HOVER_HEIGHT;
   }
 
-  handleInput(input: InputState): void {
+  handleInput(input: InputState, deltaTime: number): boolean {
     if (input.isMouseButtonPressed(2)) {
       const worldPos = input.getWorldPosition();
       if (worldPos) {
         const groundHeight = this.getGroundHeight(worldPos.x, worldPos.z);
         worldPos.y = groundHeight + Config.DRONE.MOVEMENT.HOVER_HEIGHT;
         this.moveTo(worldPos);
+        return true;
       }
     }
+    return false;
   }
 
   private createBody(): void {

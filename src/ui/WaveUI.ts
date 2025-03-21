@@ -280,7 +280,7 @@ export class WaveUI extends HTMLUIElement {
       .join('');
   }
 
-  handleInput(input: InputState, _deltaTime: number): void {
+  handleInput(input: InputState, _deltaTime: number): boolean {
     if (input.isMouseButtonPressed(0)) {
       const mousePos = input.getMousePosition();
       const { x, y } = this.getScreenCoordinates(mousePos.x, mousePos.y);
@@ -289,9 +289,11 @@ export class WaveUI extends HTMLUIElement {
         const nextWaveButton = this.element.querySelector('.next-wave-button');
         if (nextWaveButton && this.isPointInElement(x, y, nextWaveButton) && this.onNextWaveClick) {
           this.onNextWaveClick();
+          return true;
         }
       }
     }
+    return false;
   }
 
   handleClick(): boolean {

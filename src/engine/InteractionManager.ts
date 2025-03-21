@@ -20,11 +20,8 @@ export class InteractionManager {
     this.mouse = new THREE.Vector2();
   }
 
-  addInteractable(
-    interactable: Interactable,
-    priority: InteractionPriority = InteractionPriority.WORLD
-  ): void {
-    this.interactables.set(interactable, priority);
+  addInteractable(interactable: Interactable): void {
+    this.interactables.set(interactable, interactable.priority);
   }
 
   removeInteractable(interactable: Interactable): void {
@@ -44,9 +41,8 @@ export class InteractionManager {
 
     // Handle input for each interactable in priority order
     for (const interactable of sortedInteractables) {
-      interactable.handleInput(input, deltaTime);
-      // If the interactable is selected, stop processing further interactions
-      if (input.getSelection() === interactable) {
+      // If the interactable consumes the input, stop processing further interactables
+      if (interactable.handleInput(input, deltaTime)) {
         break;
       }
     }

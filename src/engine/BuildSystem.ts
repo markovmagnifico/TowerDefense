@@ -107,14 +107,14 @@ export class BuildSystem implements Interactable {
     dummyTower.dispose();
   }
 
-  handleInput(input: InputState): void {
-    if (!this.isActive || !this.previewMesh || !this.terrainGrid) return;
+  handleInput(input: InputState): boolean {
+    if (!this.isActive || !this.previewMesh || !this.terrainGrid) return false;
 
     const worldPos = input.getWorldPosition();
     if (!worldPos) {
       // Hide preview when not over terrain
       this.previewMesh.visible = false;
-      return;
+      return false;
     }
 
     // Get grid position and update preview
@@ -140,13 +140,19 @@ export class BuildSystem implements Interactable {
       }
     });
 
-    // Handle clicks
-    if (input.isMouseButtonPressed(0) && canBuild) {
-      this.placeTower(gridPos);
-      // Don't deactivate build mode after placing
+    // Only consume mouse input
+    if (input.isMouseButtonPressed(0)) {
+      if (canBuild) {
+        this.placeTower(gridPos);
+      }
+      return true; // Consume left clicks in build mode whether we can build or not
     } else if (input.isMouseButtonPressed(2)) {
       this.deactivate();
+      return true; // Consume right clicks in build mode
     }
+
+    // Allow all other input (like keyboard) to pass through
+    return false;
   }
 
   private placeTower(gridPos: { x: number; z: number }): void {

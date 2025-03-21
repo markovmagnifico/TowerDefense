@@ -36,7 +36,7 @@ export class GameCamera implements Interactable {
     this.controls.target.copy(lookAtPoint);
   }
 
-  handleInput(input: InputState, deltaTime: number): void {
+  handleInput(input: InputState, deltaTime: number): boolean {
     const moveDirection = new THREE.Vector3();
     const forward = this.getForwardDirection();
     const right = this.getRightDirection();
@@ -49,7 +49,10 @@ export class GameCamera implements Interactable {
     if (moveDirection.length() > 0) {
       moveDirection.normalize();
       this.moveInDirection(moveDirection);
+      return true;
     }
+
+    return false; // Don't consume input if we didn't move
   }
 
   update(): void {

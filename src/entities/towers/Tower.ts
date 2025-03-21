@@ -32,14 +32,16 @@ export abstract class Tower extends Entity implements Interactable {
     return this.object3D;
   }
 
-  handleInput(input: InputState, deltaTime: number): void {
+  handleInput(input: InputState, deltaTime: number): boolean {
     // Basic click handling - will be expanded later for upgrades/targeting
     if (input.isMouseButtonPressed(0)) {
       const mousePos = input.getMousePosition();
       if (this.isPointOverTower(mousePos.x, mousePos.y)) {
         input.setSelection(this);
+        return true; // Consume input when tower is selected
       }
     }
+    return false; // Don't consume input if we didn't handle it
   }
 
   update(deltaTime: number): void {

@@ -156,7 +156,7 @@ export class BuildBar extends HTMLUIElement {
     document.head.appendChild(style);
   }
 
-  handleInput(input: InputState): void {
+  handleInput(input: InputState): boolean {
     if (input.isMouseButtonPressed(0)) {
       const mousePos = input.getMousePosition();
       const { x, y } = this.getScreenCoordinates(mousePos.x, mousePos.y);
@@ -166,12 +166,14 @@ export class BuildBar extends HTMLUIElement {
         if (slot !== null) {
           this.toggleSlot(slot);
         }
+        return true; // Consume input when over the UI, even if no slot was clicked
       }
     }
+    return false; // Don't consume input if not over the UI
   }
 
   handleClick(): boolean {
-    return false; // We don't need to consume clicks
+    return true; // Always consume clicks when they reach this UI element
   }
 
   private toggleSlot(index: number): void {

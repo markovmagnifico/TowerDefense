@@ -58,7 +58,7 @@ export abstract class HTMLUIElement implements UIElement, Interactable {
   }
 
   abstract handleClick(): boolean;
-  abstract handleInput(input: InputState, deltaTime: number): void;
+  abstract handleInput(input: InputState, deltaTime: number): boolean;
   abstract priority: number;
   isSelected = false;
 

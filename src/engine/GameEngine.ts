@@ -53,7 +53,7 @@ export class GameEngine {
 
     // Initialize Wave UI and Manager
     this.waveUI = new WaveUI();
-    this.interactionManager.addInteractable(this.waveUI, InteractionPriority.MACRO_UI);
+    this.interactionManager.addInteractable(this.waveUI);
 
     // Create WaveManager with null Level - will be properly initialized in loadLevel
     this.waveManager = new WaveManager(this.waveUI, this.entityManager, null);
@@ -64,7 +64,7 @@ export class GameEngine {
       this.currentLevel?.getTerrainGrid() ?? null,
       this.entityManager
     );
-    this.interactionManager.addInteractable(this.buildSystem, InteractionPriority.BUILD_MODE);
+    this.interactionManager.addInteractable(this.buildSystem);
 
     window.addEventListener('resize', this.handleResize.bind(this));
   }
